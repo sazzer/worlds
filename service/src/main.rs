@@ -8,6 +8,7 @@ mod integration;
 mod server;
 mod service;
 mod settings;
+mod authorization;
 
 use config::{Config, Environment};
 use dotenv::dotenv;
