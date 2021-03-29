@@ -2276,6 +2276,7 @@ dependencies = [
  "actix-web",
  "actix-web-prom",
  "assert2",
+ "async-trait",
  "config",
  "dotenv",
  "env_logger",

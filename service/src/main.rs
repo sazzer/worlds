@@ -1,6 +1,7 @@
 #![deny(clippy::all, clippy::pedantic)]
 #![allow(clippy::module_name_repetitions)]
 
+mod home;
 mod http;
 mod server;
 mod service;
