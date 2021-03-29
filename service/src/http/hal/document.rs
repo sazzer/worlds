@@ -79,9 +79,7 @@ mod tests {
 
     #[test]
     fn new_from_struct() {
-        let body = Body {
-            name: "Graham".to_owned(),
-        };
+        let body = Body { name: "Graham".to_owned() };
         let document = HalDocument::new(body);
 
         check!(document.data == json!({"name": "Graham"}));
@@ -90,12 +88,8 @@ mod tests {
 
     #[test]
     fn with_single_links() {
-        let body = Body {
-            name: "Graham".to_owned(),
-        };
-        let document = HalDocument::new(body)
-            .with_link("self", "/")
-            .with_link("author", "/users/abc");
+        let body = Body { name: "Graham".to_owned() };
+        let document = HalDocument::new(body).with_link("self", "/").with_link("author", "/users/abc");
 
         check!(document.links.len() == 2);
 
@@ -108,12 +102,8 @@ mod tests {
 
     #[test]
     fn with_repeated_links() {
-        let body = Body {
-            name: "Graham".to_owned(),
-        };
-        let document = HalDocument::new(body)
-            .with_link("item", "/foo")
-            .with_link("item", "/bar");
+        let body = Body { name: "Graham".to_owned() };
+        let document = HalDocument::new(body).with_link("item", "/foo").with_link("item", "/bar");
 
         check!(document.links.len() == 1);
 
@@ -123,9 +113,7 @@ mod tests {
 
     #[test]
     fn to_respondable() {
-        let document = HalDocument::new(Body {
-            name: "Graham".to_owned(),
-        });
+        let document = HalDocument::new(Body { name: "Graham".to_owned() });
         let respondable = SimpleRespondable::from(document);
 
         check!(respondable.status_code() == 200);
@@ -135,10 +123,6 @@ mod tests {
         check!(content_type.unwrap() == "application/hal+json");
 
         let body = respondable.body();
-        check!(
-            body == HalDocument::new(Body {
-                name: "Graham".to_owned(),
-            })
-        );
+        check!(body == HalDocument::new(Body { name: "Graham".to_owned() }));
     }
 }

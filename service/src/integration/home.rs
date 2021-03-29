@@ -7,9 +7,7 @@ use insta::assert_json_snapshot;
 pub async fn test_home_document() {
     let test_service = TestService::new().await;
 
-    let response = test_service
-        .inject(TestRequest::get().uri("/").to_request())
-        .await;
+    let response = test_service.inject(TestRequest::get().uri("/").to_request()).await;
 
     check!(response.status == 200);
 

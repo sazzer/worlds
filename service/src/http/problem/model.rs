@@ -115,10 +115,7 @@ impl Problem {
         V: Serialize,
     {
         let mut extra = self.extra;
-        extra.insert(
-            key.into(),
-            serde_json::to_value(value).expect("Failed to serialize extra detail"),
-        );
+        extra.insert(key.into(), serde_json::to_value(value).expect("Failed to serialize extra detail"));
 
         Self { extra, ..self }
     }
@@ -153,14 +150,10 @@ mod tests {
 
     #[test]
     fn test_basic_problem_with_status() {
-        let problem =
-            Problem::new_with_status(ProblemDetails::SomeProblem, StatusCode::BAD_REQUEST);
+        let problem = Problem::new_with_status(ProblemDetails::SomeProblem, StatusCode::BAD_REQUEST);
 
         assert_eq!(StatusCode::BAD_REQUEST, problem.status);
-        assert_eq!(
-            "tag:new_landing,2021:some/problem",
-            problem.error.problem_type()
-        );
+        assert_eq!("tag:new_landing,2021:some/problem", problem.error.problem_type());
         assert_eq!(None, problem.detail);
         assert_eq!(None, problem.instance);
         assert_eq!(0, problem.extra.len());
@@ -171,10 +164,7 @@ mod tests {
         let problem = Problem::new(ProblemDetails::SomeProblem);
 
         assert_eq!(StatusCode::NO_CONTENT, problem.status);
-        assert_eq!(
-            "tag:new_landing,2021:some/problem",
-            problem.error.problem_type()
-        );
+        assert_eq!("tag:new_landing,2021:some/problem", problem.error.problem_type());
         assert_eq!(None, problem.detail);
         assert_eq!(None, problem.instance);
         assert_eq!(0, problem.extra.len());
@@ -182,18 +172,14 @@ mod tests {
 
     #[test]
     fn test_full_problem() {
-        let problem =
-            Problem::new_with_status(ProblemDetails::SomeProblem, StatusCode::BAD_REQUEST)
-                .with_detail("Some Detail")
-                .with_instance("Some Instance")
-                .with_extra("some_key", "Some Value")
-                .with_extra("other_key", 42);
+        let problem = Problem::new_with_status(ProblemDetails::SomeProblem, StatusCode::BAD_REQUEST)
+            .with_detail("Some Detail")
+            .with_instance("Some Instance")
+            .with_extra("some_key", "Some Value")
+            .with_extra("other_key", 42);
 
         assert_eq!(StatusCode::BAD_REQUEST, problem.status);
-        assert_eq!(
-            "tag:new_landing,2021:some/problem",
-            problem.error.problem_type()
-        );
+        assert_eq!("tag:new_landing,2021:some/problem", problem.error.problem_type());
         assert_eq!(Some("Some Detail".to_owned()), problem.detail);
         assert_eq!(Some("Some Instance".to_owned()), problem.instance);
         assert_eq!(2, problem.extra.len());
@@ -201,9 +187,6 @@ mod tests {
             Some(&serde_json::to_value("Some Value").unwrap()),
             problem.extra.get(&"some_key".to_owned())
         );
-        assert_eq!(
-            Some(&serde_json::to_value(42).unwrap()),
-            problem.extra.get(&"other_key".to_owned())
-        );
+        assert_eq!(Some(&serde_json::to_value(42).unwrap()), problem.extra.get(&"other_key".to_owned()));
     }
 }

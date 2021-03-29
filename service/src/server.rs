@@ -30,9 +30,7 @@ impl Server {
 
         tracing::debug!(address = ?address, "Starting HTTP server");
 
-        let prometheus =
-            PrometheusMetrics::new_with_registry(self.prometheus, "actix", Some("/metrics"), None)
-                .unwrap();
+        let prometheus = PrometheusMetrics::new_with_registry(self.prometheus, "actix", Some("/metrics"), None).unwrap();
         let routes = self.routes.clone();
 
         HttpServer::new(move || {

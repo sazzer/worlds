@@ -25,11 +25,7 @@ impl Service {
         let headers = response.headers().clone();
         let body = actix_web::test::read_body(response).await;
 
-        TestResponse {
-            status,
-            headers,
-            body,
-        }
+        TestResponse { status, headers, body }
     }
 }
 

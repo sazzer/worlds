@@ -29,9 +29,6 @@ pub async fn handle(home_links: Data<Arc<HomeLinksUseCase>>) -> Response<HalResp
 
     HalRespondable::from(hal_document)
         .with_status_code(StatusCode::OK)
-        .with_header(CacheControl(vec![
-            CacheDirective::Public,
-            CacheDirective::MaxAge(3600),
-        ]))
+        .with_header(CacheControl(vec![CacheDirective::Public, CacheDirective::MaxAge(3600)]))
         .into()
 }
