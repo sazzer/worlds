@@ -29,3 +29,4 @@ async-trait = "0.1.48"
 
 [dev-dependencies]
 assert2 = "0.3.5"
+insta = "1.7.1"
