@@ -25,3 +25,6 @@ actix-web = "3.3.2"
 futures = "0.3.13"
 actix-web-prom = "0.5.1"
 prometheus = "0.11.0"
+
+[dev-dependencies]
+assert2 = "0.3.5"
