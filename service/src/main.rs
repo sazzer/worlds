@@ -1,6 +1,8 @@
 #![deny(clippy::all, clippy::pedantic)]
 #![allow(clippy::module_name_repetitions)]
 
+mod server;
+mod service;
 mod settings;
 
 use config::{Config, Environment};
@@ -27,6 +29,9 @@ async fn main() {
     let settings = load_settings();
 
     tracing::debug!(settings = ?settings, "Loaded settings");
+
+    let service = crate::service::Service::new(settings).await;
+    service.start().await;
 }
 
 /// Load the application settings from the environment.

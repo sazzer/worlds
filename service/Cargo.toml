@@ -5,7 +5,7 @@ authors = ["Graham Cox <graham@grahamcox.co.uk>"]
 edition = "2018"
 
 [dependencies]
-actix-rt = "2.1.0"
+actix-rt = "1.1.1"
 opentelemetry = "0.12.0"
 opentelemetry-jaeger = "0.11.0"
 tracing = { version = "0.1.25", features = ["log-always"] }
@@ -18,3 +18,10 @@ dotenv = "0.15.0"
 config = "0.11.0"
 serde = {version = "1.0.125", features = ["derive"] }
 serde_json = { version = "1.0.64", features = ["preserve_order"] }
+actix-cors = "0.5.4"
+actix-http = "2.2.0"
+actix-service = "1.0.6"
+actix-web = "3.3.2"
+futures = "0.3.13"
+actix-web-prom = "0.5.1"
+prometheus = "0.11.0"
