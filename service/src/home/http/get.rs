@@ -1,5 +1,5 @@
-use crate::home::HomeLinksUseCase;
 use crate::http::{hal::HalDocument, hal::HalRespondable, Response};
+use crate::{authorization::Authentication, home::HomeLinksUseCase};
 use actix_http::http::{
     header::{CacheControl, CacheDirective},
     StatusCode,
@@ -16,13 +16,13 @@ pub struct HomeDocument {
 }
 
 /// Generate the home document
-pub async fn handle(home_links: Data<Arc<HomeLinksUseCase>>) -> Response<HalRespondable> {
+pub async fn handle(home_links: Data<Arc<HomeLinksUseCase>>, authentication: Authentication) -> Response<HalRespondable> {
     let mut hal_document = HalDocument::new(HomeDocument {
         name: env!("CARGO_PKG_NAME"),
         version: env!("CARGO_PKG_VERSION"),
     });
 
-    let links = home_links.generate_links().await;
+    let links = home_links.generate_links(&authentication).await;
     for (name, link) in links {
         hal_document = hal_document.with_link(name, link);
     }

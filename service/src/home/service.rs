@@ -1,4 +1,4 @@
-use crate::http::hal::Link;
+use crate::{authorization::Authentication, http::hal::Link};
 use async_trait::async_trait;
 use std::sync::Arc;
 
@@ -6,7 +6,7 @@ use std::sync::Arc;
 #[async_trait]
 pub trait LinkContributor: Send + Sync {
     /// Generate the links for this component.
-    async fn generate_links(&self) -> Vec<(String, Link)>;
+    async fn generate_links(&self, authentication: &Authentication) -> Vec<(String, Link)>;
 }
 
 /// Use Case for generating the entire set of links for the home document.
@@ -16,11 +16,11 @@ pub struct HomeLinksUseCase {
 
 impl HomeLinksUseCase {
     /// Generate the links for this component.
-    pub async fn generate_links(&self) -> Vec<(String, Link)> {
+    pub async fn generate_links(&self, authentication: &Authentication) -> Vec<(String, Link)> {
         let mut result = vec![];
 
         for c in &self.contributors {
-            let mut links = c.generate_links().await;
+            let mut links = c.generate_links(authentication).await;
             result.append(&mut links);
         }
 
@@ -30,7 +30,7 @@ impl HomeLinksUseCase {
 
 #[async_trait]
 impl LinkContributor for Vec<(String, Link)> {
-    async fn generate_links(&self) -> Vec<(String, Link)> {
+    async fn generate_links(&self, _: &Authentication) -> Vec<(String, Link)> {
         self.clone()
     }
 }
