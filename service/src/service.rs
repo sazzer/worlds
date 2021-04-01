@@ -23,8 +23,12 @@ impl Service {
 
         let prometheus = Registry::new();
 
+        let authorization = crate::authorization::component::new("secret");
         let home = crate::home::component::new().build();
-        let server = crate::server::component::new().with_routes(home).build(cfg.port, prometheus);
+        let server = crate::server::component::new()
+            .with_routes(authorization)
+            .with_routes(home)
+            .build(cfg.port, prometheus);
 
         tracing::debug!("Built Worlds");
 

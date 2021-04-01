@@ -1,3 +1,4 @@
+pub mod component;
 mod model;
 mod usecases;
 
