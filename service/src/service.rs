@@ -24,7 +24,9 @@ impl Service {
         let prometheus = Registry::new();
 
         let authorization = crate::authorization::component::new("secret");
-        let home = crate::home::component::new().build();
+        let users = crate::users::component::new();
+        let home = crate::home::component::new().with_contributor(users.home_links.clone()).build();
+
         let server = crate::server::component::new()
             .with_routes(authorization)
             .with_routes(home)

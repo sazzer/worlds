@@ -1,6 +1,7 @@
 #![deny(clippy::all, clippy::pedantic)]
 #![allow(clippy::module_name_repetitions)]
 
+mod authorization;
 mod home;
 mod http;
 #[cfg(test)]
@@ -8,7 +9,7 @@ mod integration;
 mod server;
 mod service;
 mod settings;
-mod authorization;
+mod users;
 
 use config::{Config, Environment};
 use dotenv::dotenv;

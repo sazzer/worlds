@@ -3,4 +3,8 @@
 pub enum Principal {
     /// The principal is a specific user.
     User(String),
+
+    /// Additional unused principal type to force code to work correctly.
+    #[allow(dead_code)]
+    Unknown,
 }

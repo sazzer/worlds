@@ -22,7 +22,7 @@ pub async fn handle(home_links: Data<Arc<HomeLinksUseCase>>, authentication: Aut
         version: env!("CARGO_PKG_VERSION"),
     });
 
-    let links = home_links.generate_links(&authentication).await;
+    let links = home_links.generate_links(&authentication);
     for (name, link) in links {
         hal_document = hal_document.with_link(name, link);
     }
