@@ -1,9 +1,9 @@
-use super::{AccessToken, SecurityContext};
+use crate::authorization::{AccessToken, AuthorizeSecurityContextUseCase, SecurityContext};
 use crate::http::problem::{Problem, UNAUTHORIZED};
 use actix_http::{http::header, Payload};
-use actix_web::{FromRequest, HttpRequest};
+use actix_web::{web::Data, FromRequest, HttpRequest};
 use futures::Future;
-use std::pin::Pin;
+use std::{pin::Pin, sync::Arc};
 
 /// Authentication details for a request
 #[derive(Debug)]
@@ -40,9 +40,12 @@ impl FromRequest for Authentication {
         let authorization = req.headers().get(header::AUTHORIZATION).cloned();
         tracing::debug!("Processing authorization header: {:?}", authorization);
 
+        let authorizer: &Data<Arc<AuthorizeSecurityContextUseCase>> = req.app_data().unwrap();
+        let authorizer = authorizer.get_ref().clone();
+
         Box::pin(async move {
             if let Some(authorization) = authorization {
-                let _token: AccessToken = authorization
+                let token: AccessToken = authorization
                     .to_str()
                     .map_err(|e| {
                         tracing::warn!(e = ?e, authorization = ?authorization, "Failed to transform authorization header to string");
@@ -54,7 +57,13 @@ impl FromRequest for Authentication {
                         Problem::from(UNAUTHORIZED)
                     })?;
 
-                Err(Problem::from(UNAUTHORIZED))
+                authorizer
+                    .authorize(token)
+                    .map_err(|e| {
+                        tracing::warn!(e = ?e, authorization = ?authorization, "Failed to authorize access token");
+                        Problem::from(UNAUTHORIZED)
+                    })
+                    .map(|security_context| Authentication::Authenticated(security_context))
             } else {
                 Ok(Authentication::Unauthenticated)
             }

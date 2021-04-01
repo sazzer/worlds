@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 /// Representation of an access token as read from an Authorization header.
 #[derive(Debug, PartialEq)]
-pub struct AccessToken(String);
+pub struct AccessToken(pub String);
 
 /// Potential errors from parsing an access token from a header string.
 #[derive(Debug, PartialEq, thiserror::Error)]
@@ -27,6 +27,12 @@ impl FromStr for AccessToken {
         } else {
             Err(Self::Err::NonBearerToken)
         }
+    }
+}
+
+impl AsRef<str> for AccessToken {
+    fn as_ref(&self) -> &str {
+        &self.0
     }
 }
 
