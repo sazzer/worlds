@@ -1,4 +1,5 @@
 use crate::service::{testing::TestResponse, Service};
+use crate::testdatabase::TestDatabase;
 use actix_http::{
     error::ParseError,
     http::{
@@ -11,16 +12,19 @@ use actix_http::{
 /// Wrapper around the service being tested.
 pub struct TestService {
     service: Service,
+    #[allow(dead_code)] // Used for RAII purposes.
+    test_database: TestDatabase,
 }
 
 impl TestService {
     pub async fn new() -> Self {
         let _ = env_logger::try_init();
 
+        let test_database = TestDatabase::new();
         let cfg = crate::settings::Settings { port: 0 };
 
         let service = Service::new(cfg).await;
-        Self { service }
+        Self { service, test_database }
     }
 
     pub fn authorization<S>(&self, user_id: S) -> AuthorizationHeader

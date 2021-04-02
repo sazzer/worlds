@@ -9,6 +9,8 @@ mod integration;
 mod server;
 mod service;
 mod settings;
+#[cfg(test)]
+mod testdatabase;
 mod users;
 
 use config::{Config, Environment};
