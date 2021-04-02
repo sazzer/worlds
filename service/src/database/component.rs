@@ -10,5 +10,7 @@ pub struct Component {
 pub async fn new(url: &str) -> Component {
     let db = Database::new(url).await;
 
+    super::migrate::migrate(&db).await;
+
     Component { database: Arc::new(db) }
 }
