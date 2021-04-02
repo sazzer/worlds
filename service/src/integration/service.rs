@@ -1,6 +1,14 @@
 use crate::service::{testing::TestResponse, Service};
-use actix_http::Request;
+use actix_http::{
+    error::ParseError,
+    http::{
+        header::{Header, IntoHeaderValue, InvalidHeaderValue, AUTHORIZATION},
+        HeaderName, HeaderValue,
+    },
+    HttpMessage, Request,
+};
 
+/// Wrapper around the service being tested.
 pub struct TestService {
     service: Service,
 }
@@ -15,7 +23,37 @@ impl TestService {
         Self { service }
     }
 
+    pub fn authorization<S>(&self, user_id: S) -> AuthorizationHeader
+    where
+        S: Into<String>,
+    {
+        AuthorizationHeader { token: user_id.into() }
+    }
+
     pub async fn inject(&self, req: Request) -> TestResponse {
         self.service.inject(req).await
+    }
+}
+
+/// Representation of the Authorization header to use.
+pub struct AuthorizationHeader {
+    token: String,
+}
+
+impl Header for AuthorizationHeader {
+    fn name() -> HeaderName {
+        AUTHORIZATION
+    }
+
+    fn parse<T: HttpMessage>(_: &T) -> Result<Self, ParseError> {
+        todo!()
+    }
+}
+
+impl IntoHeaderValue for AuthorizationHeader {
+    type Error = InvalidHeaderValue;
+
+    fn try_into(self) -> Result<HeaderValue, Self::Error> {
+        HeaderValue::from_str(&format!("Bearer {}", self.token))
     }
 }
