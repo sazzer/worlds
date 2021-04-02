@@ -17,16 +17,13 @@ impl FromStr for AccessToken {
     type Err = AccessTokenParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s.starts_with("Bearer ") {
-            let token = s[7..].trim();
+        s.strip_prefix("Bearer ").map(str::trim).map_or(Err(Self::Err::NonBearerToken), |token| {
             if token.is_empty() {
                 Err(Self::Err::Blank)
             } else {
                 Ok(AccessToken(token.to_owned()))
             }
-        } else {
-            Err(Self::Err::NonBearerToken)
-        }
+        })
     }
 }
 

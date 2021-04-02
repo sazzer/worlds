@@ -36,7 +36,7 @@ impl AuthorizeSecurityContextUseCase {
     ///
     /// # Returns
     /// The authorized security context.
-    pub fn authorize(&self, token: AccessToken) -> Result<SecurityContext, AuthorizeSecurityContextError> {
+    pub fn authorize(&self, token: &AccessToken) -> Result<SecurityContext, AuthorizeSecurityContextError> {
         let encoded = Compact::<ClaimsSet<()>, ()>::new_encoded(token.as_ref());
         let decoded = encoded.decode(&self.secret, SignatureAlgorithm::HS256).map_err(|e| {
             tracing::warn!(e = ?e, token = ?token, "Failed to decode access token");
@@ -71,8 +71,8 @@ impl AuthorizeSecurityContextUseCase {
 
         Ok(SecurityContext {
             principal: Principal::User(sub),
-            issued: iat.deref().clone(),
-            expires: exp.deref().clone(),
+            issued: *iat.deref(),
+            expires: *exp.deref(),
         })
     }
 }
@@ -109,7 +109,7 @@ impl GenerateSecurityContextUseCase {
         let decoded = Compact::new_decoded(
             RegisteredHeader {
                 algorithm: SignatureAlgorithm::HS256,
-                ..Default::default()
+                ..RegisteredHeader::default()
             }
             .into(),
             ClaimsSet::<()> {
@@ -122,7 +122,7 @@ impl GenerateSecurityContextUseCase {
                     },
                     issued_at: Some(issued.into()),
                     expiry: Some(expires.into()),
-                    ..Default::default()
+                    ..RegisteredClaims::default()
                 },
                 private: (),
             },
@@ -195,7 +195,7 @@ mod tests {
 
         let sut = AuthorizeSecurityContextUseCase::new("secret");
 
-        let result = sut.authorize(token);
+        let result = sut.authorize(&token);
 
         let_assert!(Ok(token) = result);
         check!(token.principal == Principal::User("userId".to_owned()));
@@ -214,7 +214,7 @@ mod tests {
     fn authorize_invalid_token(token: AccessToken) {
         let sut = AuthorizeSecurityContextUseCase::new("secret");
 
-        let result = sut.authorize(token);
+        let result = sut.authorize(&token);
 
         let_assert!(Err(err) = result);
         check!(err == AuthorizeSecurityContextError::InvalidToken);
@@ -234,7 +234,7 @@ mod tests {
         check!(sc.principal == Principal::User("myUserId".to_owned()));
         check!(sc.issued + Duration::days(5) == sc.expires);
 
-        let authorized = authorize_sut.authorize(token);
+        let authorized = authorize_sut.authorize(&token);
         let_assert!(Ok(authorized) = authorized);
         check!(authorized == sc);
     }

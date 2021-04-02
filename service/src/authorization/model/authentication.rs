@@ -16,10 +16,7 @@ pub enum Authentication {
 
 impl Authentication {
     pub fn is_authenticated(&self) -> bool {
-        match self {
-            &Authentication::Unauthenticated => false,
-            _ => true,
-        }
+        !matches!(self, Authentication::Unauthenticated)
     }
 
     pub fn security_context(&self) -> Option<&SecurityContext> {
@@ -58,12 +55,12 @@ impl FromRequest for Authentication {
                     })?;
 
                 authorizer
-                    .authorize(token)
+                    .authorize(&token)
                     .map_err(|e| {
                         tracing::warn!(e = ?e, authorization = ?authorization, "Failed to authorize access token");
                         Problem::from(UNAUTHORIZED)
                     })
-                    .map(|security_context| Authentication::Authenticated(security_context))
+                    .map(Authentication::Authenticated)
             } else {
                 Ok(Authentication::Unauthenticated)
             }
