@@ -21,6 +21,7 @@ impl Service {
     ///
     /// # Returns
     /// The service itself.
+    #[tracing::instrument]
     pub async fn new(cfg: Settings) -> Self {
         tracing::debug!("Building Worlds");
 
