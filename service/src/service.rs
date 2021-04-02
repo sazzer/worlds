@@ -9,6 +9,7 @@ use std::sync::Arc;
 pub struct Service {
     /// The HTTP Server.
     server: crate::server::Server,
+    #[allow(dead_code)] // Used for integration tests.
     access_token_generator: Arc<crate::authorization::GenerateSecurityContextUseCase>,
 }
 
@@ -25,6 +26,7 @@ impl Service {
 
         let prometheus = Registry::new();
 
+        let database = crate::database::component::new(&cfg.database_url).await;
         let authorization = crate::authorization::component::new("secret");
         let users = crate::users::component::new();
         let home = crate::home::component::new().with_contributor(users.home_links.clone()).build();

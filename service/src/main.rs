@@ -2,6 +2,7 @@
 #![allow(clippy::module_name_repetitions)]
 
 mod authorization;
+mod database;
 mod home;
 mod http;
 #[cfg(test)]

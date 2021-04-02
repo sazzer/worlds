@@ -21,7 +21,10 @@ impl TestService {
         let _ = env_logger::try_init();
 
         let test_database = TestDatabase::new();
-        let cfg = crate::settings::Settings { port: 0 };
+        let cfg = crate::settings::Settings {
+            port: 0,
+            database_url: test_database.url.clone(),
+        };
 
         let service = Service::new(cfg).await;
         Self { service, test_database }
