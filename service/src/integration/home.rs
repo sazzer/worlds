@@ -49,7 +49,6 @@ pub async fn invalid_authorization() {
 }
 
 #[actix_rt::test]
-#[ignore]
 pub async fn authorized() {
     let test_service = TestService::new().await;
 
@@ -69,6 +68,9 @@ pub async fn authorized() {
       "_links": {
         "self": {
           "href": "/"
+        },
+        "tag:worlds,2021:rels/user": {
+          "href": "/users/myUserId"
         }
       }
     }

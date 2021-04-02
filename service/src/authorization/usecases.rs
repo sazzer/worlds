@@ -1,10 +1,14 @@
 use super::{AccessToken, Principal, SecurityContext};
 use biscuit::{
     jwa::SignatureAlgorithm,
-    jws::{Compact, Secret},
-    ClaimsSet, Validation, ValidationOptions,
+    jws::{Compact, RegisteredHeader, Secret},
+    ClaimsSet, RegisteredClaims, SingleOrMultiple, Validation, ValidationOptions,
 };
+use chrono::{Duration, SubsecRound, Utc};
 use std::ops::Deref;
+
+const ISSUER: &str = "tag:worlds,2021:authorization";
+const AUDIENCE: &str = "tag:worlds,2021:authorization";
 
 /// Use case for authorizing a security context.
 pub struct AuthorizeSecurityContextUseCase {
@@ -19,10 +23,10 @@ pub enum AuthorizeSecurityContextError {
 
 impl AuthorizeSecurityContextUseCase {
     /// Create a new instance of the use case.
-    pub fn new(secret: &str) -> AuthorizeSecurityContextUseCase {
+    pub fn new(secret: &str) -> Self {
         let signing_secret = Secret::Bytes(secret.to_owned().into_bytes());
 
-        AuthorizeSecurityContextUseCase { secret: signing_secret }
+        Self { secret: signing_secret }
     }
 
     /// Authorize the provided access token and return the security context that it represents.
@@ -41,8 +45,8 @@ impl AuthorizeSecurityContextUseCase {
 
         decoded
             .validate(ValidationOptions {
-                issuer: Validation::Validate("tag:worlds,2021:authorization".to_owned()),
-                audience: Validation::Validate("tag:worlds,2021:authorization".to_owned()),
+                issuer: Validation::Validate(ISSUER.to_owned()),
+                audience: Validation::Validate(AUDIENCE.to_owned()),
                 ..ValidationOptions::default()
             })
             .map_err(|e| {
@@ -73,12 +77,71 @@ impl AuthorizeSecurityContextUseCase {
     }
 }
 
+/// Use case for generating a security context for a principal.
+pub struct GenerateSecurityContextUseCase {
+    secret: Secret,
+    duration: Duration,
+}
+
+impl GenerateSecurityContextUseCase {
+    /// Create a new instance of the use case.
+    pub fn new(secret: &str, duration: Duration) -> Self {
+        let signing_secret = Secret::Bytes(secret.to_owned().into_bytes());
+
+        Self {
+            secret: signing_secret,
+            duration,
+        }
+    }
+
+    /// Generate a security context and access token for the provided principal.
+    ///
+    /// # Parameters
+    /// - `principal` - The principal to generate the security context for
+    ///
+    /// # Returns
+    /// A security context and associated access token
+    pub fn generate(&self, principal: Principal) -> (SecurityContext, AccessToken) {
+        // Issue the token a second ago to ensure that the time is in the past.
+        let issued = Utc::now().round_subsecs(0) - Duration::seconds(1);
+        let expires = issued + self.duration;
+
+        let decoded = Compact::new_decoded(
+            RegisteredHeader {
+                algorithm: SignatureAlgorithm::HS256,
+                ..Default::default()
+            }
+            .into(),
+            ClaimsSet::<()> {
+                registered: RegisteredClaims {
+                    issuer: Some(ISSUER.to_owned()),
+                    audience: Some(SingleOrMultiple::Single(AUDIENCE.to_owned())),
+                    subject: match &principal {
+                        Principal::User(user_id) => Some(user_id.clone()),
+                        Principal::Unknown => None,
+                    },
+                    issued_at: Some(issued.into()),
+                    expiry: Some(expires.into()),
+                    ..Default::default()
+                },
+                private: (),
+            },
+        );
+
+        let encoded = decoded.encode(&self.secret).unwrap();
+
+        let token = encoded.encoded().unwrap().to_string();
+        tracing::debug!(token = ?token, "Encoded JWT");
+
+        (SecurityContext { principal, expires, issued }, AccessToken(token))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use assert2::{check, let_assert};
-    use biscuit::{jws::RegisteredHeader, RegisteredClaims, SingleOrMultiple};
-    use chrono::{DateTime, Duration, SubsecRound, Utc};
+    use chrono::DateTime;
     use test_case::test_case;
 
     fn build_token(
@@ -155,5 +218,24 @@ mod tests {
 
         let_assert!(Err(err) = result);
         check!(err == AuthorizeSecurityContextError::InvalidToken);
+    }
+
+    #[test]
+    fn generate_token() {
+        let _ = env_logger::try_init();
+
+        let authorize_sut = AuthorizeSecurityContextUseCase::new("secret");
+        let generate_sut = GenerateSecurityContextUseCase::new("secret", Duration::days(5));
+
+        let principal = Principal::User("myUserId".to_owned());
+
+        let (sc, token) = generate_sut.generate(principal);
+
+        check!(sc.principal == Principal::User("myUserId".to_owned()));
+        check!(sc.issued + Duration::days(5) == sc.expires);
+
+        let authorized = authorize_sut.authorize(token);
+        let_assert!(Ok(authorized) = authorized);
+        check!(authorized == sc);
     }
 }

@@ -2,7 +2,7 @@ use super::Principal;
 use chrono::{DateTime, Utc};
 
 /// Security Context that a request has authenticated as.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct SecurityContext {
     /// The principal that has authenticated.
     pub principal: Principal,

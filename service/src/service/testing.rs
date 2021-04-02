@@ -1,3 +1,5 @@
+use crate::authorization::{AccessToken, Principal};
+
 use super::Service;
 use actix_http::Request;
 use actix_web::App;
@@ -26,6 +28,19 @@ impl Service {
         let body = actix_web::test::read_body(response).await;
 
         TestResponse { status, headers, body }
+    }
+
+    /// Generate an access token for the provided user ID.
+    ///
+    /// # Parameters
+    /// - `user_id` - The ID of the User to generate the token for
+    ///
+    /// # Returns
+    /// The token.
+    pub fn authorize_user(&self, user_id: &str) -> AccessToken {
+        let (_, token) = self.access_token_generator.generate(Principal::User(user_id.to_owned()));
+
+        token
     }
 }
 

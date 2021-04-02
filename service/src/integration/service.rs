@@ -27,7 +27,10 @@ impl TestService {
     where
         S: Into<String>,
     {
-        AuthorizationHeader { token: user_id.into() }
+        let user_id = user_id.into();
+        let token = self.service.authorize_user(&user_id);
+
+        AuthorizationHeader { token: token.0 }
     }
 
     pub async fn inject(&self, req: Request) -> TestResponse {
