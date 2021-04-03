@@ -60,6 +60,40 @@ impl Connection {
 
         Transaction(Some(transaction))
     }
+
+    /// Perform a SQL query on the connection
+    ///
+    /// # Parameters
+    /// - `sql` - The SQL query to perform
+    /// - `params` - Any bind parameters for the SQL query
+    ///
+    /// # Returns
+    /// The rows that were returned from the database
+    pub async fn query_opt<S>(&self, sql: S, params: &[&(dyn ToSql + Sync)]) -> Result<Option<Row>, tokio_postgres::Error>
+    where
+        S: Into<String>,
+    {
+        let sql = sql.into();
+
+        let span = tracing::trace_span!(
+            "database::Connection::query",
+            sql = sql.as_str(),
+            found = tracing::field::Empty,
+            error = tracing::field::Empty,
+        );
+        let _enter = span.enter();
+
+        let result = self.0.query_opt(sql.as_str(), params).await;
+
+        if let Ok(r) = &result {
+            span.record("found", &r.is_some());
+            span.record("error", &false);
+        } else {
+            span.record("error", &true);
+        }
+
+        result
+    }
 }
 
 impl<'a> Transaction<'a> {

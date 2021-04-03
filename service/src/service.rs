@@ -29,12 +29,13 @@ impl Service {
 
         let database = crate::database::component::new(&cfg.database_url).await;
         let authorization = crate::authorization::component::new("secret");
-        let users = crate::users::component::new();
+        let users = crate::users::component::new(database.database);
         let home = crate::home::component::new().with_contributor(users.home_links.clone()).build();
 
         let server = crate::server::component::new()
             .with_routes(authorization.clone())
             .with_routes(home)
+            .with_routes(users)
             .build(cfg.port, prometheus);
 
         tracing::debug!("Built Worlds");
