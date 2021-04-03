@@ -7,6 +7,7 @@ mod home;
 mod http;
 #[cfg(test)]
 mod integration;
+mod model;
 mod server;
 mod service;
 mod settings;
