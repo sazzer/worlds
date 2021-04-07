@@ -5,3 +5,6 @@ authors = ["Graham Cox <graham@grahamcox.co.uk>"]
 edition = "2018"
 
 [dependencies]
+
+[package.metadata.commands]
+clippy = "find . -name *.rs | grep -v target | xargs touch; cargo clippy"
