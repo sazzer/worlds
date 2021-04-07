@@ -1,0 +1,7 @@
+[package]
+name = "worlds_service"
+version = "0.1.0"
+authors = ["Graham Cox <graham@grahamcox.co.uk>"]
+edition = "2018"
+
+[dependencies]
