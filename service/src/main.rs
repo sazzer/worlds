@@ -3,6 +3,7 @@
 
 mod server;
 mod service;
+mod users;
 
 use dotenv::dotenv;
 use tracing_subscriber::layer::SubscriberExt;

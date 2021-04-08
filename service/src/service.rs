@@ -11,7 +11,11 @@ impl Service {
     pub async fn new() -> Self {
         tracing::info!("Building Worlds");
 
-        let server = crate::server::component::Builder::default().build(8000);
+        let users = crate::users::component::Component::new();
+
+        let server = crate::server::component::Builder::default()
+            .with_routes(users)
+            .build(8000);
 
         tracing::info!("Built Worlds");
         Self {
