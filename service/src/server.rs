@@ -1,4 +1,5 @@
 pub mod component;
+mod span;
 
 use actix_cors::Cors;
 use actix_http::http::header;
@@ -22,13 +23,16 @@ impl Server {
         tracing::info!(address = ?address, "Starting HTTP Server");
 
         HttpServer::new(move || {
-            let app = App::new().wrap(Logger::default()).wrap(
-                Cors::default()
-                    .allow_any_origin()
-                    .allow_any_method()
-                    .allow_any_header()
-                    .expose_headers(vec![header::ETAG, header::LOCATION, header::LINK]),
-            );
+            let app = App::new()
+                .wrap(Logger::default())
+                .wrap(
+                    Cors::default()
+                        .allow_any_origin()
+                        .allow_any_method()
+                        .allow_any_header()
+                        .expose_headers(vec![header::ETAG, header::LOCATION, header::LINK]),
+                )
+                .wrap(span::Span);
 
             tracing::trace!("Built listener");
 
