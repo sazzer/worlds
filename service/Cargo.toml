@@ -24,6 +24,11 @@ serde = {version = "1.0.125", features = ["derive"] }
 serde_json = { version = "1.0.64", features = ["preserve_order"] }
 chrono = { version = "0.4.19", features = ["serde"] }
 uuid = { version = "0.8.2", features = ["serde", "v4"] }
+thiserror = "1.0.24"
+
+[dev-dependencies]
+test-case = "1.1.0"
+assert2 = "0.3.5"
 
 [package.metadata.commands]
 clippy = "find . -name *.rs | grep -v target | xargs touch; cargo clippy"
