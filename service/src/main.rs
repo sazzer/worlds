@@ -1,10 +1,11 @@
 #![deny(clippy::all, clippy::pedantic)]
 #![allow(clippy::module_name_repetitions)]
 
+mod http;
+mod model;
 mod server;
 mod service;
 mod users;
-mod http;
 
 use dotenv::dotenv;
 use tracing_subscriber::layer::SubscriberExt;

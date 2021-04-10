@@ -22,6 +22,8 @@ actix-cors = "0.6.0-beta.1"
 futures = "0.3.13"
 serde = {version = "1.0.125", features = ["derive"] }
 serde_json = { version = "1.0.64", features = ["preserve_order"] }
+chrono = { version = "0.4.19", features = ["serde"] }
+uuid = { version = "0.8.2", features = ["serde", "v4"] }
 
 [package.metadata.commands]
 clippy = "find . -name *.rs | grep -v target | xargs touch; cargo clippy"
