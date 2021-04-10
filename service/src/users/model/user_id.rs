@@ -1,9 +1,9 @@
+use serde::Serialize;
 use std::str::FromStr;
-
 use uuid::Uuid;
 
 /// The ID of a user.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize)]
 pub struct UserId(Uuid);
 
 #[derive(Debug, PartialEq, thiserror::Error)]

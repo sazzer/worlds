@@ -1,7 +1,8 @@
+use serde::Serialize;
 use std::str::FromStr;
 
 /// The Username of a user.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize)]
 pub struct Username(String);
 
 #[derive(Debug, PartialEq, thiserror::Error)]
