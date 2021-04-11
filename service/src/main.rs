@@ -1,12 +1,15 @@
 #![deny(clippy::all, clippy::pedantic)]
 #![allow(clippy::module_name_repetitions)]
 
+mod database;
 mod http;
 mod model;
 mod server;
 mod service;
+mod settings;
 mod users;
 
+use config::{Config, Environment};
 use dotenv::dotenv;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::Registry;
@@ -26,6 +29,23 @@ async fn main() {
     let subscriber = Registry::default().with(telemetry);
     tracing::subscriber::set_global_default(subscriber).unwrap();
 
-    let service = service::Service::new().await;
+    let settings = load_settings();
+
+    let service = service::Service::new(settings).await;
     service.start().await;
+}
+
+/// Load the application settings from the environment.
+///
+/// # Returns
+/// The loaded settings.
+fn load_settings() -> settings::Settings {
+    let mut s = Config::new();
+    s.set_default("port", 8000)
+        .expect("Failed to set default value for 'port'");
+
+    s.merge(Environment::default())
+        .expect("Failed to load environment properties");
+
+    s.try_into().expect("Failed to build settings from config")
 }

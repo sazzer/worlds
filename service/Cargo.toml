@@ -25,6 +25,11 @@ serde_json = { version = "1.0.64", features = ["preserve_order"] }
 chrono = { version = "0.4.19", features = ["serde"] }
 uuid = { version = "0.8.2", features = ["serde", "v4"] }
 thiserror = "1.0.24"
+config = "0.11.0"
+deadpool = "0.7.0"
+deadpool-postgres = "0.7.0"
+tokio-postgres = { version = "0.7.1", features = ["with-uuid-0_8", "with-chrono-0_4", "with-serde_json-1"] }
+postgres-types = { version = "0.2.1", features = ["derive", "with-uuid-0_8", "with-chrono-0_4", "with-serde_json-1"] }
 
 [dev-dependencies]
 test-case = "1.1.0"

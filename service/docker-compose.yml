@@ -1,0 +1,18 @@
+version: "3"
+
+services:
+  worlds-dev-jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "127.0.0.1:6831:6831/udp"
+      - "127.0.0.1:6832:6832/udp"
+      - "127.0.0.1:16686:16686"
+      - "127.0.0.1:14268:14268"
+  worlds-dev-postgres:
+    image: postgres:12.4-alpine
+    environment:
+      POSTGRES_DB: worlds
+      POSTGRES_USER: worlds
+      POSTGRES_PASSWORD: worlds
+    ports:
+      - "127.0.0.1:45432:5432"

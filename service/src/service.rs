@@ -1,4 +1,5 @@
 use crate::server::Server;
+use crate::settings::Settings;
 
 /// The actual service.
 pub struct Service {
@@ -8,14 +9,15 @@ pub struct Service {
 impl Service {
     /// Create a new instance of the service.
     #[tracing::instrument]
-    pub async fn new() -> Self {
+    pub async fn new(settings: Settings) -> Self {
         tracing::info!("Building Worlds");
 
+        let _db = crate::database::component::Component::new(&settings.database_url).await;
         let users = crate::users::component::Component::new();
 
         let server = crate::server::component::Builder::default()
             .with_routes(users)
-            .build(8000);
+            .build(settings.port);
 
         tracing::info!("Built Worlds");
         Self {
