@@ -11,7 +11,7 @@ impl Component {
     pub async fn new(url: &str) -> Self {
         let db = Arc::new(Database::new(url).await);
 
-        let conn = db.connect().await;
+        super::migrate::migrate(&db).await;
 
         Self { database: db }
     }
