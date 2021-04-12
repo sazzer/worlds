@@ -4,18 +4,24 @@ use crate::{
         problem::{Problem, NOT_FOUND},
         response::{Response, SimpleRespondable},
     },
-    model::Identity,
-    users::{UserData, UserResource},
+    users::{UserId, UserService},
 };
-pub async fn handle() -> Result<Response<SimpleRespondable<UserModel>>, Problem> {
-    let user = Some(UserResource {
-        identity: Identity::default(),
-        data: UserData {
-            username: "sazzer".parse().unwrap(),
-            email: "graham@grahamcox.co.uk".parse().unwrap(),
-            display_name: "Graham".to_owned(),
-        },
-    });
+use actix_web::web::{Data, Path};
+use std::sync::Arc;
 
-    user.ok_or_else(|| NOT_FOUND.into()).map(|user| user.into())
+pub async fn handle(
+    service: Data<Arc<UserService>>,
+    path: Path<String>,
+) -> Result<Response<SimpleRespondable<UserModel>>, Problem> {
+    let user_id: UserId = path.parse().map_err(|e| {
+        tracing::warn!(e = ?e, path = ?path, "Failed to parse User ID");
+
+        Problem::from(NOT_FOUND)
+    })?;
+
+    service
+        .get_user_by_id(user_id)
+        .await
+        .ok_or_else(|| NOT_FOUND.into())
+        .map(|user| user.into())
 }

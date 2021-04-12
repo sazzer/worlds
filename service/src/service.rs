@@ -12,8 +12,8 @@ impl Service {
     pub async fn new(settings: Settings) -> Self {
         tracing::info!("Building Worlds");
 
-        let _db = crate::database::component::Component::new(&settings.database_url).await;
-        let users = crate::users::component::Component::new();
+        let db = crate::database::component::Component::new(&settings.database_url).await;
+        let users = crate::users::component::Component::new(db.database);
 
         let server = crate::server::component::Builder::default()
             .with_routes(users)
