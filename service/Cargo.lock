@@ -2173,6 +2173,7 @@ dependencies = [
  "actix-service",
  "actix-web",
  "assert2",
+ "bytes",
  "chrono",
  "config 0.11.0",
  "deadpool",

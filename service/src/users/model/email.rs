@@ -1,8 +1,9 @@
+use postgres_types::FromSql;
 use serde::Serialize;
 use std::str::FromStr;
 
 /// The email address of a user.
-#[derive(Debug, PartialEq, Serialize)]
+#[derive(Debug, PartialEq, Serialize, FromSql)]
 pub struct Email(String);
 
 #[derive(Debug, PartialEq, thiserror::Error)]

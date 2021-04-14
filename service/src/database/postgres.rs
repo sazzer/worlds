@@ -66,6 +66,48 @@ impl Connection {
 
         Transaction(Some(transaction))
     }
+
+    /// Perform a SQL query on the connection, expecting up to one row.
+    ///
+    /// # Parameters
+    /// - `sql` - The SQL query to perform
+    /// - `params` - Any bind parameters for the SQL query
+    ///
+    /// # Returns
+    /// The row that was returned from the database, or `None` if no rows matched.
+    pub async fn query_opt<S>(
+        &self,
+        sql: S,
+        params: &[&(dyn ToSql + Sync)],
+    ) -> Result<Option<Row>, tokio_postgres::Error>
+    where
+        S: Into<String>,
+    {
+        let sql = sql.into();
+
+        let span = tracing::trace_span!(
+            "database::Connection::query",
+            sql = sql.as_str(),
+            found = tracing::field::Empty,
+            error = tracing::field::Empty,
+        );
+        let _enter = span.enter();
+
+        let result = self.0.query_opt(sql.as_str(), params).await;
+
+        match &result {
+            Ok(r) => {
+                span.record("found", &r.is_some());
+                span.record("error", &false);
+            }
+            Err(e) => {
+                span.record("error", &true);
+                tracing::warn!(e = ?e, "Error executing query");
+            }
+        };
+
+        result
+    }
 }
 
 impl<'a> Transaction<'a> {
@@ -98,12 +140,16 @@ impl<'a> Transaction<'a> {
         let tx = self.0.as_ref().unwrap();
         let result = tx.execute(sql.as_str(), params).await;
 
-        if let Ok(r) = result {
-            span.record("result", &r);
-            span.record("error", &false);
-        } else {
-            span.record("error", &true);
-        }
+        match &result {
+            Ok(r) => {
+                span.record("result", &r);
+                span.record("error", &false);
+            }
+            Err(e) => {
+                span.record("error", &true);
+                tracing::warn!(e = ?e, "Error executing query");
+            }
+        };
 
         result
     }
@@ -163,12 +209,16 @@ impl<'a> Transaction<'a> {
         let tx = self.0.as_ref().unwrap();
         let result = tx.query(sql.as_str(), params).await;
 
-        if let Ok(r) = &result {
-            span.record("rows", &r.len());
-            span.record("error", &false);
-        } else {
-            span.record("error", &true);
-        }
+        match &result {
+            Ok(r) => {
+                span.record("rows", &r.len());
+                span.record("error", &false);
+            }
+            Err(e) => {
+                span.record("error", &true);
+                tracing::warn!(e = ?e, "Error executing query");
+            }
+        };
 
         result
     }
