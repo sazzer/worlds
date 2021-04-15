@@ -7,6 +7,8 @@ mod model;
 mod server;
 mod service;
 mod settings;
+#[cfg(test)]
+mod tests;
 mod users;
 
 use config::{Config, Environment};
