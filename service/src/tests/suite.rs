@@ -1,4 +1,4 @@
-use super::database::TestDatabase;
+use super::database::{seed::SeedData, TestDatabase};
 use crate::{
     service::{testing::TestResponse, Service},
     settings::Settings,
@@ -32,5 +32,9 @@ impl TestSuite {
     /// Inject a request into the service and return the response.
     pub async fn inject(&self, req: Request) -> TestResponse {
         self.service.inject(req).await
+    }
+
+    pub async fn seed(&self, data: &dyn SeedData) {
+        self.db.seed(data).await;
     }
 }

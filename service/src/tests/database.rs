@@ -1,7 +1,10 @@
 mod postgres;
+pub mod seed;
 
+use deadpool_postgres::{Manager, ManagerConfig, Pool, RecyclingMethod};
 use lazy_static::lazy_static;
 use postgres::Postgres;
+use std::str::FromStr;
 use testcontainers::{clients::Cli, Container, Docker};
 
 lazy_static! {
@@ -35,5 +38,25 @@ impl TestDatabase {
             port,
             url,
         }
+    }
+
+    /// Seed some data into the database
+    ///
+    /// # Parameters
+    /// - `data` - The data to seed
+    pub async fn seed(&self, data: &dyn seed::SeedData) {
+        tracing::debug!(data = ?data, "Seeding data");
+
+        let pg_config = tokio_postgres::Config::from_str(&self.url).expect("Invalid database URL");
+
+        let mgr_config = ManagerConfig {
+            recycling_method: RecyclingMethod::Fast,
+        };
+        let mgr = Manager::from_config(pg_config, tokio_postgres::NoTls, mgr_config);
+        let pool = Pool::new(mgr, 16);
+
+        let conn = pool.get().await.expect("Failed to get database connection");
+
+        conn.execute(data.sql(), &data.binds()[..]).await.unwrap();
     }
 }
