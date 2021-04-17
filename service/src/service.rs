@@ -16,9 +16,11 @@ impl Service {
         tracing::info!("Building Worlds");
 
         let db = crate::database::component::Component::new(&settings.database_url).await;
+        let authorization = crate::authorization::component::Component::new();
         let users = crate::users::component::Component::new(db.database);
 
         let server = crate::server::component::Builder::default()
+            .with_routes(authorization)
             .with_routes(users)
             .build(settings.port);
 

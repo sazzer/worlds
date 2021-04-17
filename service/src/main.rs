@@ -1,6 +1,7 @@
 #![deny(clippy::all, clippy::pedantic)]
 #![allow(clippy::module_name_repetitions)]
 
+mod authorization;
 mod database;
 mod http;
 mod model;
