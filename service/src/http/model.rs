@@ -11,7 +11,7 @@ pub trait ResourceResponse {
         StatusCode::OK
     }
 
-    /// Produce the ETag to use for the response.
+    /// Produce the Etag to use for the response.
     fn etag(&self) -> Option<EntityTag> {
         None
     }

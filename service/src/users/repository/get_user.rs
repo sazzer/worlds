@@ -24,7 +24,6 @@ impl UserRepository {
                     version: row.get("version"),
                     created: row.get("created"),
                     updated: row.get("updated"),
-                    ..Identity::default()
                 },
                 data: UserData {
                     username: row.get("username"),
