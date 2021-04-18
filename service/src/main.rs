@@ -1,5 +1,5 @@
 #![deny(clippy::all, clippy::pedantic)]
-#![allow(clippy::module_name_repetitions)]
+#![allow(clippy::module_name_repetitions, dead_code)]
 
 mod authorization;
 mod database;
