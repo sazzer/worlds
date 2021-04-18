@@ -3,6 +3,7 @@ use postgres_types::{accepts, to_sql_checked, FromSql, IsNull, ToSql, Type};
 use serde::Serialize;
 use std::str::FromStr;
 use uuid::Uuid;
+use crate::authorization::Principal;
 
 /// The ID of a user.
 #[derive(Debug, PartialEq, Serialize, FromSql)]
@@ -54,6 +55,11 @@ impl ToSql for UserId {
     }
 }
 
+impl From<UserId> for Principal {
+    fn from(user_id: UserId) -> Self {
+        Self::User(user_id.0.to_string())
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::*;

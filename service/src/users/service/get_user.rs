@@ -10,7 +10,7 @@ impl UserService {
     /// # Returns
     /// The user resource, or `None` if it couldn't be found.
     #[tracing::instrument(skip(self))]
-    pub async fn get_user_by_id(&self, user_id: UserId) -> Option<UserResource> {
+    pub async fn get_user_by_id(&self, user_id: &UserId) -> Option<UserResource> {
         self.repository.get_user_by_id(user_id).await
     }
 }

@@ -50,7 +50,7 @@ async fn get_invalid_user_id() {
 }
 
 #[actix_rt::test]
-async fn get_valid_user_id() {
+async fn get_valid_user_id_unauthenticated() {
     let user = SeedUser {
         user_id: "4ea96dc3-df11-43c0-8a33-a0813f03937f".parse().unwrap(),
         version: "d61dac0c-45f2-49ed-85cc-f24bbe939404".parse().unwrap(),
@@ -81,7 +81,6 @@ async fn get_valid_user_id() {
     {
       "userId": "4ea96dc3-df11-43c0-8a33-a0813f03937f",
       "username": "testuser",
-      "email": "testuser@example.com",
       "displayName": "Test User"
     }
     "###);

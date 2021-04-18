@@ -13,7 +13,7 @@ impl UserRepository {
     /// # Returns
     /// The user resource, or `None` if it couldn't be found.
     #[tracing::instrument(skip(self))]
-    pub async fn get_user_by_id(&self, user_id: UserId) -> Option<UserResource> {
+    pub async fn get_user_by_id(&self, user_id: &UserId) -> Option<UserResource> {
         let conn = self.database.connect().await;
         conn.query_opt("SELECT * FROM users WHERE user_id = $1", &[&user_id])
             .await
