@@ -1,4 +1,6 @@
 mod authorize;
+mod constants;
+mod generate;
 
 use biscuit::jws::Secret;
 

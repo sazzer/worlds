@@ -1,10 +1,10 @@
-use super::AuthorizationService;
+use super::{
+    constants::{ALGORITHM, AUDIENCE, ISSUER},
+    AuthorizationService,
+};
 use crate::authorization::{AccessToken, Principal, SecurityContext};
-use biscuit::{jwa::SignatureAlgorithm, jws::Compact, ClaimsSet, Validation, ValidationOptions};
+use biscuit::{jws::Compact, ClaimsSet, Validation, ValidationOptions};
 use std::ops::Deref;
-
-const ISSUER: &str = "tag:worlds,2021:authorization/issuer";
-const AUDIENCE: &str = "tag:worlds,2021:authorization/audience";
 
 /// Errors from authorizing an access token.
 #[derive(Debug, PartialEq, thiserror::Error)]
@@ -23,12 +23,10 @@ impl AuthorizationService {
     /// The security context, or an error if it can't be parsed.
     pub fn authorize(&self, access_token: &AccessToken) -> Result<SecurityContext, AuthorizeError> {
         let encoded = Compact::<ClaimsSet<()>, ()>::new_encoded(&access_token.0);
-        let decoded = encoded
-            .decode(&self.secret, SignatureAlgorithm::HS256)
-            .map_err(|e| {
-                tracing::warn!(e = ?e, access_token = ?access_token, "Failed to decode access token");
-                AuthorizeError::InvalidToken
-            })?;
+        let decoded = encoded.decode(&self.secret, ALGORITHM).map_err(|e| {
+            tracing::warn!(e = ?e, access_token = ?access_token, "Failed to decode access token");
+            AuthorizeError::InvalidToken
+        })?;
 
         decoded
             .validate(ValidationOptions {
@@ -87,7 +85,7 @@ mod tests {
     ) -> AccessToken {
         let decoded = Compact::new_decoded(
             RegisteredHeader {
-                algorithm: SignatureAlgorithm::HS256,
+                algorithm: ALGORITHM,
                 ..RegisteredHeader::default()
             }
             .into(),
