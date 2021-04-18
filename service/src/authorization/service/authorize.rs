@@ -88,7 +88,7 @@ mod tests {
         let decoded = Compact::new_decoded(
             RegisteredHeader {
                 algorithm: SignatureAlgorithm::HS256,
-                ..Default::default()
+                ..RegisteredHeader::default()
             }
             .into(),
             ClaimsSet::<()> {
@@ -98,7 +98,7 @@ mod tests {
                     audience: aud.map(|s| SingleOrMultiple::Single(s.parse().unwrap())),
                     issued_at: iat.map(|t| t.into()),
                     expiry: exp.map(|t| t.into()),
-                    ..Default::default()
+                    ..RegisteredClaims::default()
                 },
                 private: (),
             },
@@ -136,15 +136,15 @@ mod tests {
         check!(token.expires == now + Duration::days(5));
     }
 
-    #[test_case(build_token(Some("userId"), Some(ISSUER), Some(AUDIENCE), Some(Utc::now() - Duration::days(5)), Some(Utc::now() - Duration::days(2)), "secret") ; "Expired")]
-    #[test_case(build_token(Some("userId"), Some(ISSUER), Some(AUDIENCE), Some(Utc::now() + Duration::days(2)), Some(Utc::now() + Duration::days(5)), "secret") ; "Not Issued Yet")]
-    #[test_case(build_token(Some("userId"), Some("wrong"), Some(AUDIENCE), Some(Utc::now() - Duration::days(5)), Some(Utc::now() + Duration::days(5)), "secret") ; "Wrong Issuer")]
-    #[test_case(build_token(Some("userId"), Some(ISSUER), Some("wrong"), Some(Utc::now() - Duration::days(5)), Some(Utc::now() + Duration::days(5)), "secret") ; "Wrong Audience")]
-    #[test_case(build_token(None, Some(ISSUER), Some(AUDIENCE), Some(Utc::now() - Duration::days(5)), Some(Utc::now() + Duration::days(5)), "secret") ; "No Subject")]
-    #[test_case(build_token(Some("userId"), Some(ISSUER), Some(AUDIENCE), None, Some(Utc::now() + Duration::days(5)), "secret") ; "No Issued Time")]
-    #[test_case(build_token(Some("userId"), Some(ISSUER), Some(AUDIENCE), Some(Utc::now() - Duration::days(5)), None, "secret") ; "No Expiry Time")]
-    #[test_case(build_token(Some("userId"), Some(ISSUER), Some(AUDIENCE), Some(Utc::now() - Duration::days(5)), Some(Utc::now() + Duration::days(5)), "wrong") ; "Wrong Secret")]
-    fn authorize_invalid_token(token: AccessToken) {
+    #[test_case(&build_token(Some("userId"), Some(ISSUER), Some(AUDIENCE), Some(Utc::now() - Duration::days(5)), Some(Utc::now() - Duration::days(2)), "secret") ; "Expired")]
+    #[test_case(&build_token(Some("userId"), Some(ISSUER), Some(AUDIENCE), Some(Utc::now() + Duration::days(2)), Some(Utc::now() + Duration::days(5)), "secret") ; "Not Issued Yet")]
+    #[test_case(&build_token(Some("userId"), Some("wrong"), Some(AUDIENCE), Some(Utc::now() - Duration::days(5)), Some(Utc::now() + Duration::days(5)), "secret") ; "Wrong Issuer")]
+    #[test_case(&build_token(Some("userId"), Some(ISSUER), Some("wrong"), Some(Utc::now() - Duration::days(5)), Some(Utc::now() + Duration::days(5)), "secret") ; "Wrong Audience")]
+    #[test_case(&build_token(None, Some(ISSUER), Some(AUDIENCE), Some(Utc::now() - Duration::days(5)), Some(Utc::now() + Duration::days(5)), "secret") ; "No Subject")]
+    #[test_case(&build_token(Some("userId"), Some(ISSUER), Some(AUDIENCE), None, Some(Utc::now() + Duration::days(5)), "secret") ; "No Issued Time")]
+    #[test_case(&build_token(Some("userId"), Some(ISSUER), Some(AUDIENCE), Some(Utc::now() - Duration::days(5)), None, "secret") ; "No Expiry Time")]
+    #[test_case(&build_token(Some("userId"), Some(ISSUER), Some(AUDIENCE), Some(Utc::now() - Duration::days(5)), Some(Utc::now() + Duration::days(5)), "wrong") ; "Wrong Secret")]
+    fn authorize_invalid_token(token: &AccessToken) {
         let sut = AuthorizationService::new("secret");
 
         let result = sut.authorize(&token);

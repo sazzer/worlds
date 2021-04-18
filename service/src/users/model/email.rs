@@ -39,16 +39,16 @@ mod tests {
         let result: Result<Email, ParseEmailError> = input.parse();
 
         let_assert!(Ok(output) = result);
-        let_assert!(Email(uuid) = output);
-        check!(uuid.to_string() == expected);
+        let_assert!(Email(value) = output);
+        check!(value == expected);
     }
 
-    #[test_case("", ParseEmailError::Blank ; "Blank")]
-    #[test_case("   ", ParseEmailError::Blank ; "Whitespace")]
-    fn test_parse_fail(input: &str, expected: ParseEmailError) {
+    #[test_case("", &ParseEmailError::Blank ; "Blank")]
+    #[test_case("   ", &ParseEmailError::Blank ; "Whitespace")]
+    fn test_parse_fail(input: &str, expected: &ParseEmailError) {
         let result: Result<Email, ParseEmailError> = input.parse();
 
         let_assert!(Err(e) = result);
-        check!(e == expected);
+        check!(&e == expected);
     }
 }

@@ -39,16 +39,16 @@ mod tests {
         let result: Result<Username, ParseUsernameError> = input.parse();
 
         let_assert!(Ok(output) = result);
-        let_assert!(Username(uuid) = output);
-        check!(uuid.to_string() == expected);
+        let_assert!(Username(value) = output);
+        check!(value == expected);
     }
 
-    #[test_case("", ParseUsernameError::Blank ; "Blank")]
-    #[test_case("   ", ParseUsernameError::Blank ; "Whitespace")]
-    fn test_parse_fail(input: &str, expected: ParseUsernameError) {
+    #[test_case("", &ParseUsernameError::Blank ; "Blank")]
+    #[test_case("   ", &ParseUsernameError::Blank ; "Whitespace")]
+    fn test_parse_fail(input: &str, expected: &ParseUsernameError) {
         let result: Result<Username, ParseUsernameError> = input.parse();
 
         let_assert!(Err(e) = result);
-        check!(e == expected);
+        check!(&e == expected);
     }
 }

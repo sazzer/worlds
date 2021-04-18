@@ -1,9 +1,9 @@
+use crate::authorization::Principal;
 use bytes::BytesMut;
 use postgres_types::{accepts, to_sql_checked, FromSql, IsNull, ToSql, Type};
 use serde::Serialize;
 use std::str::FromStr;
 use uuid::Uuid;
-use crate::authorization::Principal;
 
 /// The ID of a user.
 #[derive(Debug, PartialEq, Serialize, FromSql)]
@@ -75,17 +75,17 @@ mod tests {
         let result: Result<UserId, ParseUserIdError> = input.parse();
 
         let_assert!(Ok(output) = result);
-        let_assert!(UserId(uuid) = output);
-        check!(uuid.to_string() == expected);
+        let_assert!(UserId(value) = output);
+        check!(value.to_string() == expected);
     }
 
-    #[test_case("", ParseUserIdError::Blank ; "Blank")]
-    #[test_case("   ", ParseUserIdError::Blank ; "Whitespace")]
-    #[test_case("xxx", ParseUserIdError::Malformed ; "Malformed")]
-    fn test_parse_fail(input: &str, expected: ParseUserIdError) {
+    #[test_case("", &ParseUserIdError::Blank ; "Blank")]
+    #[test_case("   ", &ParseUserIdError::Blank ; "Whitespace")]
+    #[test_case("xxx", &ParseUserIdError::Malformed ; "Malformed")]
+    fn test_parse_fail(input: &str, expected: &ParseUserIdError) {
         let result: Result<UserId, ParseUserIdError> = input.parse();
 
         let_assert!(Err(e) = result);
-        check!(e == expected);
+        check!(&e == expected);
     }
 }

@@ -18,8 +18,8 @@ impl Service {
             });
         }
 
-        let mut test_service = actix_web::test::init_service(app).await;
-        let response = actix_web::test::call_service(&mut test_service, req).await;
+        let test_service = actix_web::test::init_service(app).await;
+        let response = actix_web::test::call_service(&test_service, req).await;
 
         let status = response.status();
         let headers = response.headers().clone();
