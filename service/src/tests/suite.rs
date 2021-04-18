@@ -3,7 +3,7 @@ use crate::{
     service::{testing::TestResponse, Service},
     settings::Settings,
 };
-use actix_http::Request;
+use actix_http::{http::header::IntoHeaderPair, Request};
 
 /// Wrapper around the components needed to test the service.
 pub struct TestSuite {
@@ -36,5 +36,9 @@ impl TestSuite {
 
     pub async fn seed(&self, data: &dyn SeedData) {
         self.db.seed(data).await;
+    }
+
+    pub fn authenticate(&self, user_id: &str) -> impl IntoHeaderPair {
+        self.service.authorize(user_id)
     }
 }

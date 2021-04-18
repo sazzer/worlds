@@ -1,5 +1,6 @@
 use super::Service;
-use actix_http::Request;
+use crate::authorization::Principal;
+use actix_http::{http::header::IntoHeaderPair, Request};
 use actix_web::App;
 
 impl Service {
@@ -30,6 +31,14 @@ impl Service {
             headers,
             body,
         }
+    }
+
+    pub fn authorize(&self, user_id: &str) -> impl IntoHeaderPair {
+        let (_, token) = self
+            .authorization_service
+            .generate_security_context(Principal::User(user_id.into()));
+
+        ("Authorization", token.0)
     }
 }
 

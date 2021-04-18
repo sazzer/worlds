@@ -3,10 +3,12 @@ pub mod testing;
 
 use crate::server::Server;
 use crate::settings::Settings;
+use std::sync::Arc;
 
 /// The actual service.
 pub struct Service {
     server: Server,
+    authorization_service: Arc<crate::authorization::AuthorizationService>,
 }
 
 impl Service {
@@ -20,13 +22,14 @@ impl Service {
         let users = crate::users::component::Component::new(db.database);
 
         let server = crate::server::component::Builder::default()
-            .with_routes(authorization)
+            .with_routes(authorization.clone())
             .with_routes(users)
             .build(settings.port);
 
         tracing::info!("Built Worlds");
         Self {
             server: server.server,
+            authorization_service: authorization.service.clone(),
         }
     }
 
