@@ -71,3 +71,41 @@ impl FromRequest for Authentication {
         })
     }
 }
+
+impl FromRequest for SecurityContext {
+    type Config = ();
+    type Error = Problem;
+    type Future = Pin<Box<dyn Future<Output = Result<Self, Self::Error>>>>;
+
+    fn from_request(req: &HttpRequest, payload: &mut Payload) -> Self::Future {
+        let authentication = Authentication::from_request(req, payload);
+
+        Box::pin(async move {
+            let authentication = authentication.await?;
+
+            match authentication {
+                Authentication::Authenticated(sc) => Ok(sc),
+                Authentication::Unauthenticated => Err(Problem::from(UNAUTHORIZED)),
+            }
+        })
+    }
+}
+
+impl FromRequest for Principal {
+    type Config = ();
+    type Error = Problem;
+    type Future = Pin<Box<dyn Future<Output = Result<Self, Self::Error>>>>;
+
+    fn from_request(req: &HttpRequest, payload: &mut Payload) -> Self::Future {
+        let authentication = Authentication::from_request(req, payload);
+
+        Box::pin(async move {
+            let authentication = authentication.await?;
+
+            match authentication {
+                Authentication::Authenticated(sc) => Ok(sc.principal),
+                Authentication::Unauthenticated => Err(Problem::from(UNAUTHORIZED)),
+            }
+        })
+    }
+}
