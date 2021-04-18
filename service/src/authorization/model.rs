@@ -1,23 +1,9 @@
-use chrono::{DateTime, Utc};
+mod access_token;
+mod authentication;
+mod principal;
+mod security_context;
 
-/// An authenticated principal.
-#[derive(Debug, PartialEq)]
-pub enum Principal {
-    /// An authenticated user principal.
-    User(String),
-}
-
-/// An authenticated security context.
-#[derive(Debug)]
-pub struct SecurityContext {
-    /// The principal that was authenticated.
-    pub principal: Principal,
-    /// When the security context was issued.
-    pub issued: DateTime<Utc>,
-    /// When the security context expires.
-    pub expires: DateTime<Utc>,
-}
-
-/// An access token, representing a signed security context.
-#[derive(Debug)]
-pub struct AccessToken(pub(super) String);
+pub use access_token::*;
+pub use authentication::*;
+pub use principal::*;
+pub use security_context::*;
