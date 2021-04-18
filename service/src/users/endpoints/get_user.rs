@@ -1,5 +1,6 @@
 use super::model::UserModel;
 use crate::{
+    authorization::Authentication,
     http::{
         problem::{Problem, NOT_FOUND},
         response::{Response, SimpleRespondable},
@@ -12,6 +13,7 @@ use std::sync::Arc;
 pub async fn handle(
     service: Data<Arc<UserService>>,
     path: Path<String>,
+    _authentication: Authentication,
 ) -> Result<Response<SimpleRespondable<UserModel>>, Problem> {
     let user_id: UserId = path.parse().map_err(|e| {
         tracing::warn!(e = ?e, path = ?path, "Failed to parse User ID");

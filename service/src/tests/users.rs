@@ -86,3 +86,29 @@ async fn get_valid_user_id() {
     }
     "###);
 }
+
+#[actix_rt::test]
+async fn get_invalid_authorization() {
+    let suite = TestSuite::new().await;
+
+    let response = suite
+        .inject(
+            TestRequest::get()
+                .uri("/users/4ea96dc3-df11-43c0-8a33-a0813f03937f")
+                .append_header(("Authorization", "Invalid"))
+                .to_request(),
+        )
+        .await;
+
+    check!(response.status == 401);
+
+    check!(response.headers.get("content-type").unwrap() == "application/problem+json");
+
+    assert_json_snapshot!(response.to_json().unwrap(), @r###"
+    {
+      "type": "about:blank",
+      "title": "Unauthorized",
+      "status": 401
+    }
+    "###);
+}
