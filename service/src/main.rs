@@ -1,6 +1,7 @@
 #![deny(clippy::all, clippy::pedantic)]
 #![allow(clippy::module_name_repetitions, dead_code)]
 
+mod authentication;
 mod authorization;
 mod database;
 mod http;
