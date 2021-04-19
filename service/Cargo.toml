@@ -33,6 +33,7 @@ postgres-types = { version = "0.2.1", features = ["derive", "with-uuid-0_8", "wi
 rust-embed = "5.9.0"
 bytes = "1.0.1"
 biscuit = "0.5.0"
+argonautica = "0.2.0"
 
 [dev-dependencies]
 test-case = "1.1.0"

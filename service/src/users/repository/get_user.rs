@@ -29,6 +29,7 @@ impl UserRepository {
                     username: row.get("username"),
                     email: row.get("email"),
                     display_name: row.get("display_name"),
+                    password: row.get("password"),
                 },
             })
     }

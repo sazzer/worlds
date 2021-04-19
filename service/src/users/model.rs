@@ -1,9 +1,11 @@
 mod email;
+mod password;
 mod user_id;
 mod username;
 
 use crate::model::Resource;
 pub use email::*;
+pub use password::*;
 pub use user_id::*;
 pub use username::*;
 
@@ -13,6 +15,7 @@ pub struct UserData {
     pub username: Username,
     pub email: Email,
     pub display_name: String,
+    pub password: Password,
 }
 
 /// Type representing a persisted user.
