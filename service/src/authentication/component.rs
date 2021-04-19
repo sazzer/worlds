@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::server::RouteConfigurer;
-use actix_web::web::ServiceConfig;
+use actix_web::web::{post, resource, ServiceConfig};
 
 /// Component for authentication.
 pub struct Component {}
@@ -14,5 +14,9 @@ impl Component {
 }
 
 impl RouteConfigurer for Component {
-    fn configure_routes(&self, _config: &mut ServiceConfig) {}
+    fn configure_routes(&self, config: &mut ServiceConfig) {
+        config.service(
+            resource("/authenticate").route(post().to(super::endpoints::authenticate::handle)),
+        );
+    }
 }
