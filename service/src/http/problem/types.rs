@@ -52,3 +52,17 @@ pub const UNAUTHORIZED: SimpleProblemType = SimpleProblemType {
     problem_title: "Unauthorized",
     status_code: StatusCode::UNAUTHORIZED,
 };
+
+/// Problem to indicate that a request was a bad request.
+pub const BAD_REQUEST: SimpleProblemType = SimpleProblemType {
+    problem_type: "about:blank",
+    problem_title: "Bad Request",
+    status_code: StatusCode::BAD_REQUEST,
+};
+
+/// Problem to indicate that a request was a valid request but wasn't processable for this request.
+pub const UNPROCESSABLE_ENTITY: SimpleProblemType = SimpleProblemType {
+    problem_type: "about:blank",
+    problem_title: "Unprocessable Entity",
+    status_code: StatusCode::UNPROCESSABLE_ENTITY,
+};

@@ -1,9 +1,9 @@
 use postgres_types::FromSql;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 
 /// The Username of a user.
-#[derive(Debug, PartialEq, Serialize, FromSql)]
+#[derive(Debug, PartialEq, Deserialize, Serialize, FromSql)]
 pub struct Username(String);
 
 #[derive(Debug, PartialEq, thiserror::Error)]
