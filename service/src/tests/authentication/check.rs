@@ -1,4 +1,4 @@
-use crate::tests::suite::TestSuite;
+use crate::tests::{database::seed::SeedUser, suite::TestSuite};
 use actix_web::test::TestRequest;
 use assert2::check;
 use insta::assert_json_snapshot;
@@ -11,7 +11,7 @@ async fn empty_body() {
     let response = suite
         .inject(
             TestRequest::post()
-                .uri("/authenticate/authenticate")
+                .uri("/authenticate/check")
                 .set_json(&json!({}))
                 .to_request(),
         )
@@ -31,11 +31,6 @@ async fn empty_body() {
           "code": "required",
           "title": "This property is required",
           "path": "/username"
-        },
-        {
-          "code": "required",
-          "title": "This property is required",
-          "path": "/password"
         }
       ]
     }
@@ -49,10 +44,9 @@ async fn blank_fields() {
     let response = suite
         .inject(
             TestRequest::post()
-                .uri("/authenticate/authenticate")
+                .uri("/authenticate/check")
                 .set_json(&json!({
-                  "username": "",
-                  "password": ""
+                  "username": ""
                 }))
                 .to_request(),
         )
@@ -72,13 +66,66 @@ async fn blank_fields() {
           "code": "min_length",
           "title": "MinLength condition is not met",
           "path": "/username"
-        },
-        {
-          "code": "min_length",
-          "title": "MinLength condition is not met",
-          "path": "/password"
         }
       ]
+    }
+    "###);
+}
+
+#[actix_rt::test]
+async fn unknown_user() {
+    let suite = TestSuite::new().await;
+
+    let response = suite
+        .inject(
+            TestRequest::post()
+                .uri("/authenticate/check")
+                .set_json(&json!({
+                  "username": "unknown"
+                }))
+                .to_request(),
+        )
+        .await;
+
+    check!(response.status == 200);
+
+    check!(response.headers.get("content-type").unwrap() == "application/json");
+
+    assert_json_snapshot!(response.to_json().unwrap(), @r###"
+    {
+      "known": false
+    }
+    "###);
+}
+
+#[actix_rt::test]
+async fn known_user() {
+    let user = SeedUser {
+        username: "testuser".to_owned(),
+        ..SeedUser::default()
+    };
+
+    let suite = TestSuite::new().await;
+    suite.seed(&user).await;
+
+    let response = suite
+        .inject(
+            TestRequest::post()
+                .uri("/authenticate/check")
+                .set_json(&json!({
+                  "username": "testuser"
+                }))
+                .to_request(),
+        )
+        .await;
+
+    check!(response.status == 200);
+
+    check!(response.headers.get("content-type").unwrap() == "application/json");
+
+    assert_json_snapshot!(response.to_json().unwrap(), @r###"
+    {
+      "known": true
     }
     "###);
 }

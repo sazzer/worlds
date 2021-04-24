@@ -3,15 +3,23 @@ use crate::{
         problem::Problem,
         valid::{Valid, Validatable},
     },
-    users::Username,
+    users::{UserService, Username},
 };
-use actix_web::web::Json;
+use actix_web::web::{Data, Json};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
+use std::sync::Arc;
 
 /// Handle the authentication request.
-pub async fn handle(_req: Valid<CheckRequest>) -> Result<Json<CheckModel>, Problem> {
-    Ok(Json(CheckModel { known: false }))
+pub async fn handle(
+    service: Data<Arc<UserService>>,
+    req: Valid<CheckRequest>,
+) -> Result<Json<CheckModel>, Problem> {
+    let user = service.get_user_by_username(&req.username).await;
+
+    Ok(Json(CheckModel {
+        known: user.is_some(),
+    }))
 }
 
 /// The incoming request to check if a username is know or not.

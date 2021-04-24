@@ -1,8 +1,5 @@
 use super::UserRepository;
-use crate::{
-    model::Identity,
-    users::{UserData, UserId, UserResource},
-};
+use crate::users::{UserId, UserResource, Username};
 
 impl UserRepository {
     /// Get the User Resource that has the provided User ID.
@@ -18,19 +15,22 @@ impl UserRepository {
         conn.query_opt("SELECT * FROM users WHERE user_id = $1", &[&user_id])
             .await
             .ok()?
-            .map(|row| UserResource {
-                identity: Identity {
-                    id: row.get("user_id"),
-                    version: row.get("version"),
-                    created: row.get("created"),
-                    updated: row.get("updated"),
-                },
-                data: UserData {
-                    username: row.get("username"),
-                    email: row.get("email"),
-                    display_name: row.get("display_name"),
-                    password: row.get("password"),
-                },
-            })
+            .map(|row| row.into())
+    }
+
+    /// Get the User Resource that has the provided Username.
+    ///
+    /// # Parameters
+    /// - `username` - The username of the user to fetch.
+    ///
+    /// # Returns
+    /// The user resource, or `None` if it couldn't be found.
+    #[tracing::instrument(skip(self))]
+    pub async fn get_user_by_username(&self, username: &Username) -> Option<UserResource> {
+        let conn = self.database.connect().await;
+        conn.query_opt("SELECT * FROM users WHERE username = $1", &[&username])
+            .await
+            .ok()?
+            .map(|row| row.into())
     }
 }

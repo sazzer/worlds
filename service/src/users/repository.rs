@@ -1,4 +1,5 @@
 mod get_user;
+mod parse;
 
 use crate::database::Database;
 use std::sync::Arc;

@@ -1,4 +1,5 @@
-use postgres_types::FromSql;
+use bytes::BytesMut;
+use postgres_types::{accepts, to_sql_checked, FromSql, IsNull, ToSql, Type};
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 
@@ -22,6 +23,19 @@ impl FromStr for Username {
         } else {
             Ok(Username(trimmed.to_owned()))
         }
+    }
+}
+
+impl ToSql for Username {
+    accepts!(TEXT, VARCHAR);
+    to_sql_checked!();
+
+    fn to_sql(
+        &self,
+        t: &Type,
+        w: &mut BytesMut,
+    ) -> Result<IsNull, Box<dyn std::error::Error + Sync + Send>> {
+        self.0.to_sql(t, w)
     }
 }
 
