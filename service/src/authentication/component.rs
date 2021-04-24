@@ -16,7 +16,11 @@ impl Component {
 impl RouteConfigurer for Component {
     fn configure_routes(&self, config: &mut ServiceConfig) {
         config.service(
-            resource("/authenticate").route(post().to(super::endpoints::authenticate::handle)),
+            resource("/authenticate/check").route(post().to(super::endpoints::check::handle)),
+        );
+        config.service(
+            resource("/authenticate/authenticate")
+                .route(post().to(super::endpoints::authenticate::handle)),
         );
     }
 }
