@@ -1,10 +1,12 @@
+use std::ops::Deref;
+
+use biscuit::{jws::Compact, ClaimsSet, Validation, ValidationOptions};
+
 use super::{
     constants::{ALGORITHM, AUDIENCE, ISSUER},
     AuthorizationService,
 };
 use crate::authorization::{AccessToken, Principal, SecurityContext};
-use biscuit::{jws::Compact, ClaimsSet, Validation, ValidationOptions};
-use std::ops::Deref;
 
 /// Errors from authorizing an access token.
 #[derive(Debug, PartialEq, thiserror::Error)]
@@ -39,9 +41,7 @@ impl AuthorizationService {
                 AuthorizeError::InvalidToken
             })?;
 
-        let payload = decoded
-            .payload()
-            .map_err(|_| AuthorizeError::InvalidToken)?;
+        let payload = decoded.payload().map_err(|_| AuthorizeError::InvalidToken)?;
 
         let sub = payload.registered.subject.clone().ok_or_else(|| {
             tracing::warn!(token = ?decoded, field = "sub", "Missing field");
@@ -58,15 +58,14 @@ impl AuthorizationService {
 
         Ok(SecurityContext {
             principal: Principal::User(sub),
-            issued: *iat.deref(),
-            expires: *exp.deref(),
+            issued:    *iat.deref(),
+            expires:   *exp.deref(),
         })
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use assert2::{check, let_assert};
     use biscuit::{
         jws::{RegisteredHeader, Secret},
@@ -74,6 +73,8 @@ mod tests {
     };
     use chrono::{DateTime, Duration, SubsecRound, Utc};
     use test_case::test_case;
+
+    use super::*;
 
     fn build_token(
         sub: Option<&str>,
@@ -98,7 +99,7 @@ mod tests {
                     expiry: exp.map(|t| t.into()),
                     ..RegisteredClaims::default()
                 },
-                private: (),
+                private:    (),
             },
         );
 

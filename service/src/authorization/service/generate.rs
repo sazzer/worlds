@@ -1,23 +1,23 @@
-use super::constants::{ALGORITHM, AUDIENCE, ISSUER};
-use super::AuthorizationService;
-use crate::authorization::{AccessToken, Principal, SecurityContext};
 use biscuit::{
     jws::{Compact, RegisteredHeader},
     ClaimsSet, RegisteredClaims, SingleOrMultiple,
 };
 use chrono::{Duration, SubsecRound, Utc};
 
+use super::{
+    constants::{ALGORITHM, AUDIENCE, ISSUER},
+    AuthorizationService,
+};
+use crate::authorization::{AccessToken, Principal, SecurityContext};
+
 impl AuthorizationService {
-    pub fn generate_security_context(
-        &self,
-        principal: Principal,
-    ) -> (SecurityContext, AccessToken) {
+    pub fn generate_security_context(&self, principal: Principal) -> (SecurityContext, AccessToken) {
         let issued = Utc::now().round_subsecs(0) - Duration::seconds(1); // Needs to be in the past, so deduct one second from it.
         let expires = issued + Duration::days(30);
         let security_context = SecurityContext {
+            principal,
             issued,
             expires,
-            principal,
         };
 
         let decoded = Compact::new_decoded(
@@ -33,11 +33,11 @@ impl AuthorizationService {
                         Principal::User(user_id) => Some(user_id.clone()),
                     },
                     audience: Some(SingleOrMultiple::Single(AUDIENCE.to_owned())),
-                    issued_at: Some(security_context.issued.clone().into()),
-                    expiry: Some(security_context.expires.clone().into()),
+                    issued_at: Some(security_context.issued.into()),
+                    expiry: Some(security_context.expires.into()),
                     ..RegisteredClaims::default()
                 },
-                private: (),
+                private:    (),
             },
         );
 
@@ -50,15 +50,15 @@ impl AuthorizationService {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use assert2::{check, let_assert};
+
+    use super::*;
 
     #[test]
     fn generate_security_context() {
         let sut = AuthorizationService::new("secret");
 
-        let (security_context, access_token) =
-            sut.generate_security_context(Principal::User("user_id".to_owned()));
+        let (security_context, access_token) = sut.generate_security_context(Principal::User("user_id".to_owned()));
 
         check!(security_context.issued + Duration::days(30) == security_context.expires);
         check!(security_context.principal == Principal::User("user_id".to_owned()));

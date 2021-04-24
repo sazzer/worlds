@@ -1,3 +1,8 @@
+use actix_web::web::Json;
+use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
+use serde_json::{json, Value};
+
 use crate::{
     authorization::AccessToken,
     http::{
@@ -6,10 +11,6 @@ use crate::{
     },
     users::Username,
 };
-use actix_web::web::Json;
-use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
 
 /// Handle the authentication request.
 pub async fn handle(_req: Valid<AuthenticateRequest>) -> Result<Json<AuthenticatedModel>, Problem> {
@@ -48,6 +49,6 @@ impl Validatable for AuthenticateRequest {
 /// Model to return if authentication was a success
 #[derive(Debug, Serialize)]
 pub struct AuthenticatedModel {
-    pub token: AccessToken,
+    pub token:      AccessToken,
     pub expires_at: DateTime<Utc>,
 }

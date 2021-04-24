@@ -1,6 +1,7 @@
-use super::Respondable;
 use actix_http::http::{header::Header, HeaderMap, StatusCode};
 use serde::Serialize;
+
+use super::Respondable;
 
 /// Simple implementation of the Respondable trait.
 ///
@@ -11,8 +12,8 @@ where
     T: Serialize,
 {
     status_code: StatusCode,
-    headers: HeaderMap,
-    body: T,
+    headers:     HeaderMap,
+    body:        T,
 }
 
 impl<T> SimpleRespondable<T>
@@ -52,10 +53,10 @@ where
         match header.try_into_value() {
             Ok(value) => {
                 self.headers.append(name, value);
-            }
+            },
             Err(_) => {
                 tracing::error!(name = ?name, "Failed to process header");
-            }
+            },
         };
 
         self

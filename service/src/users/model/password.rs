@@ -14,11 +14,7 @@ impl Password {
     /// # Returns
     /// The hashed version.
     pub fn from_plaintext(input: &str) -> Password {
-        let hash = Hasher::default()
-            .with_password(input)
-            .opt_out_of_secret_key(true)
-            .hash()
-            .unwrap();
+        let hash = Hasher::default().with_password(input).opt_out_of_secret_key(true).hash().unwrap();
 
         Password(hash)
     }
@@ -46,8 +42,9 @@ impl PartialEq<&str> for Password {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use assert2::check;
+
+    use super::*;
 
     #[test]
     fn debug() {

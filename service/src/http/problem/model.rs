@@ -1,8 +1,11 @@
+use std::{
+    collections::HashMap,
+    fmt::{Debug, Display, Formatter},
+};
+
 use actix_http::http::StatusCode;
 use serde::Serialize;
 use serde_json::Value;
-use std::collections::HashMap;
-use std::fmt::{Debug, Display, Formatter};
 
 /// Trait to represent the type of problem.
 pub trait ProblemType: Debug + Display {
@@ -20,15 +23,15 @@ pub trait ProblemTypeStatus {
 #[derive(Debug)]
 pub struct Problem {
     /// The actual error that occurred
-    pub error: Box<dyn ProblemType>,
+    pub error:    Box<dyn ProblemType>,
     /// The HTTP Status code to use
-    pub status: StatusCode,
+    pub status:   StatusCode,
     /// An additional detail message
-    pub detail: Option<String>,
+    pub detail:   Option<String>,
     /// An additional instance subtype
     pub instance: Option<String>,
     /// Any extra details
-    pub extra: HashMap<String, Value>,
+    pub extra:    HashMap<String, Value>,
 }
 
 impl Display for Problem {
@@ -115,10 +118,7 @@ impl Problem {
         V: Serialize,
     {
         let mut extra = self.extra;
-        extra.insert(
-            key.into(),
-            serde_json::to_value(value).expect("Failed to serialize extra detail"),
-        );
+        extra.insert(key.into(), serde_json::to_value(value).expect("Failed to serialize extra detail"));
 
         Self { extra, ..self }
     }
@@ -153,8 +153,7 @@ mod tests {
 
     #[test]
     fn test_basic_problem_with_status() {
-        let problem =
-            Problem::new_with_status(ProblemDetails::SomeProblem, StatusCode::BAD_REQUEST);
+        let problem = Problem::new_with_status(ProblemDetails::SomeProblem, StatusCode::BAD_REQUEST);
 
         assert_eq!(StatusCode::BAD_REQUEST, problem.status);
         assert_eq!("tag:worlds,2021:some/problem", problem.error.problem_type());
@@ -176,12 +175,11 @@ mod tests {
 
     #[test]
     fn test_full_problem() {
-        let problem =
-            Problem::new_with_status(ProblemDetails::SomeProblem, StatusCode::BAD_REQUEST)
-                .with_detail("Some Detail")
-                .with_instance("Some Instance")
-                .with_extra("some_key", "Some Value")
-                .with_extra("other_key", 42);
+        let problem = Problem::new_with_status(ProblemDetails::SomeProblem, StatusCode::BAD_REQUEST)
+            .with_detail("Some Detail")
+            .with_instance("Some Instance")
+            .with_extra("some_key", "Some Value")
+            .with_extra("other_key", 42);
 
         assert_eq!(StatusCode::BAD_REQUEST, problem.status);
         assert_eq!("tag:worlds,2021:some/problem", problem.error.problem_type());
@@ -192,9 +190,6 @@ mod tests {
             Some(&serde_json::to_value("Some Value").unwrap()),
             problem.extra.get(&"some_key".to_owned())
         );
-        assert_eq!(
-            Some(&serde_json::to_value(42).unwrap()),
-            problem.extra.get(&"other_key".to_owned())
-        );
+        assert_eq!(Some(&serde_json::to_value(42).unwrap()), problem.extra.get(&"other_key".to_owned()));
     }
 }

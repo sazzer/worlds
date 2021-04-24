@@ -1,8 +1,9 @@
 use std::sync::Arc;
 
+use actix_web::web::ServiceConfig;
+
 use super::service::AuthorizationService;
 use crate::server::RouteConfigurer;
-use actix_web::web::ServiceConfig;
 
 /// Component for authorization.
 pub struct Component {

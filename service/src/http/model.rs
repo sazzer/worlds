@@ -1,8 +1,9 @@
-use super::response::{Response, SimpleRespondable};
-use crate::model::Resource;
 use actix_http::http::StatusCode;
 use actix_web::http::header::{CacheControl, CacheDirective, ETag, EntityTag};
 use serde::Serialize;
+
+use super::response::{Response, SimpleRespondable};
+use crate::model::Resource;
 
 /// Trait that can be implemented by resources to provide response details to use.
 pub trait ResourceResponse {
@@ -34,9 +35,7 @@ where
             .unwrap_or_else(|| EntityTag::strong(resource.identity.version.to_string()));
         let cache_control = resource.cache_control();
 
-        let mut result = Self::new(resource.into())
-            .with_status_code(status_code)
-            .with_header(ETag(etag));
+        let mut result = Self::new(resource.into()).with_status_code(status_code).with_header(ETag(etag));
 
         if let Some(cache_control) = cache_control {
             result = result.with_header(CacheControl(cache_control));

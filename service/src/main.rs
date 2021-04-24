@@ -15,8 +15,7 @@ mod users;
 
 use config::{Config, Environment};
 use dotenv::dotenv;
-use tracing_subscriber::layer::SubscriberExt;
-use tracing_subscriber::Registry;
+use tracing_subscriber::{layer::SubscriberExt, Registry};
 
 #[actix_rt::main]
 async fn main() {
@@ -45,11 +44,9 @@ async fn main() {
 /// The loaded settings.
 fn load_settings() -> settings::Settings {
     let mut s = Config::new();
-    s.set_default("port", 8000)
-        .expect("Failed to set default value for 'port'");
+    s.set_default("port", 8000).expect("Failed to set default value for 'port'");
 
-    s.merge(Environment::default())
-        .expect("Failed to load environment properties");
+    s.merge(Environment::default()).expect("Failed to load environment properties");
 
     s.try_into().expect("Failed to build settings from config")
 }

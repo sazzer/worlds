@@ -1,10 +1,11 @@
 mod postgres;
 pub mod seed;
 
+use std::str::FromStr;
+
 use deadpool_postgres::{Manager, ManagerConfig, Pool, RecyclingMethod};
 use lazy_static::lazy_static;
 use postgres::Postgres;
-use std::str::FromStr;
 use testcontainers::{clients::Cli, Container, Docker};
 
 lazy_static! {
@@ -14,10 +15,10 @@ lazy_static! {
 /// Wrapper around a Postgres container for testing.
 pub struct TestDatabase {
     #[allow(dead_code)]
-    node: Container<'static, Cli, Postgres>,
+    node:     Container<'static, Cli, Postgres>,
     pub host: String,
     pub port: u16,
-    pub url: String,
+    pub url:  String,
 }
 
 impl TestDatabase {
@@ -32,12 +33,7 @@ impl TestDatabase {
         let url = format!("postgres://postgres@{}:{}", host, port);
         tracing::info!(url = ?url, "Running postgres");
 
-        Self {
-            node,
-            host,
-            port,
-            url,
-        }
+        Self { node, host, port, url }
     }
 
     /// Seed some data into the database

@@ -2,9 +2,8 @@ use std::sync::Arc;
 
 use actix_web::web::{get, resource, ServiceConfig};
 
-use crate::{database::Database, server::RouteConfigurer};
-
 use super::{repository::UserRepository, service::UserService};
+use crate::{database::Database, server::RouteConfigurer};
 
 /// Component for working with user records.
 pub struct Component {

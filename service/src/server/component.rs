@@ -1,5 +1,6 @@
-use super::{RouteConfigurer, Server};
 use std::sync::Arc;
+
+use super::{RouteConfigurer, Server};
 
 /// Builder for the HTTP Server component.
 #[derive(Default)]

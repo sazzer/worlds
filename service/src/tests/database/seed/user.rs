@@ -1,17 +1,18 @@
-use super::SeedData;
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
+use super::SeedData;
+
 #[derive(Debug)]
 pub struct SeedUser {
-    pub user_id: Uuid,
-    pub version: Uuid,
-    pub created: DateTime<Utc>,
-    pub updated: DateTime<Utc>,
-    pub username: String,
+    pub user_id:      Uuid,
+    pub version:      Uuid,
+    pub created:      DateTime<Utc>,
+    pub updated:      DateTime<Utc>,
+    pub username:     String,
     pub display_name: String,
-    pub email: String,
-    pub password: String,
+    pub email:        String,
+    pub password:     String,
 }
 
 impl Default for SeedUser {
@@ -19,14 +20,14 @@ impl Default for SeedUser {
         let now = Utc::now();
 
         Self {
-            user_id: Uuid::new_v4(),
-            version: Uuid::new_v4(),
-            created: now,
-            updated: now,
-            username: Uuid::new_v4().to_string(),
+            user_id:      Uuid::new_v4(),
+            version:      Uuid::new_v4(),
+            created:      now,
+            updated:      now,
+            username:     Uuid::new_v4().to_string(),
             display_name: "Test User".to_owned(),
-            email: format!("{}@example.com", Uuid::new_v4()),
-            password: "".to_owned(),
+            email:        format!("{}@example.com", Uuid::new_v4()),
+            password:     "".to_owned(),
         }
     }
 }

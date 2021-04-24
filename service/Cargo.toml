@@ -44,5 +44,8 @@ lazy_static = "1.4.0"
 insta = "1.7.1"
 
 [package.metadata.commands]
-clippy = "find . -name *.rs | grep -v target | xargs touch; cargo clippy"
+clippy = "cargo clippy -Zunstable-options"
 psql = "PGPASSWORD=worlds psql --host localhost --port 45432 --username worlds"
+
+[profile.dev]
+split-debuginfo = "unpacked"

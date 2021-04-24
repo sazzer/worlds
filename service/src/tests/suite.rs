@@ -1,9 +1,10 @@
+use actix_http::{http::header::IntoHeaderPair, Request};
+
 use super::database::{seed::SeedData, TestDatabase};
 use crate::{
     service::{testing::TestResponse, Service},
     settings::Settings,
 };
-use actix_http::{http::header::IntoHeaderPair, Request};
 
 /// Wrapper around the components needed to test the service.
 pub struct TestSuite {
@@ -21,7 +22,7 @@ impl TestSuite {
         let db = TestDatabase::new().await;
 
         let service = Service::new(Settings {
-            port: 0,
+            port:         0,
             database_url: db.url.clone(),
         })
         .await;

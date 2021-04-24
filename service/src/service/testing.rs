@@ -1,7 +1,8 @@
-use super::Service;
-use crate::authorization::Principal;
 use actix_http::{http::header::IntoHeaderPair, Request};
 use actix_web::App;
+
+use super::Service;
+use crate::authorization::Principal;
 
 impl Service {
     /// Inject a request into the server. Only used for testing.
@@ -26,11 +27,7 @@ impl Service {
         let headers = response.headers().clone();
         let body = actix_web::test::read_body(response).await;
 
-        TestResponse {
-            status,
-            headers,
-            body,
-        }
+        TestResponse { status, headers, body }
     }
 
     pub fn authorize(&self, user_id: &str) -> impl IntoHeaderPair {
@@ -45,11 +42,11 @@ impl Service {
 /// Representation of the response to injecting a test request
 pub struct TestResponse {
     /// The status code
-    pub status: actix_http::http::StatusCode,
+    pub status:  actix_http::http::StatusCode,
     /// The set of headers
     pub headers: actix_http::http::HeaderMap,
     /// The response body
-    pub body: actix_web::web::Bytes,
+    pub body:    actix_web::web::Bytes,
 }
 
 impl TestResponse {

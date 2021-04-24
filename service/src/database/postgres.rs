@@ -1,7 +1,8 @@
+use std::str::FromStr;
+
 use deadpool::managed::Object;
 use deadpool_postgres::{ClientWrapper, Manager, ManagerConfig, Pool, RecyclingMethod};
 use postgres_types::ToSql;
-use std::str::FromStr;
 use tokio_postgres::{IsolationLevel, Row};
 
 /// Wrapper around a database connection pool
@@ -29,9 +30,7 @@ impl Database {
         let mgr = Manager::from_config(pg_config, tokio_postgres::NoTls, mgr_config);
         let pool = Pool::new(mgr, 16);
 
-        pool.get()
-            .await
-            .expect("Unable to open database connection");
+        pool.get().await.expect("Unable to open database connection");
 
         Self { pool }
     }
@@ -39,11 +38,7 @@ impl Database {
     /// Get a new connection to the database from the connection pool
     pub async fn connect(&self) -> Connection {
         tracing::debug!("Getting database connection");
-        let conn = self
-            .pool
-            .get()
-            .await
-            .expect("Failed to get database connection");
+        let conn = self.pool.get().await.expect("Failed to get database connection");
 
         Connection(conn)
     }
@@ -75,11 +70,7 @@ impl Connection {
     ///
     /// # Returns
     /// The row that was returned from the database, or `None` if no rows matched.
-    pub async fn query_opt<S>(
-        &self,
-        sql: S,
-        params: &[&(dyn ToSql + Sync)],
-    ) -> Result<Option<Row>, tokio_postgres::Error>
+    pub async fn query_opt<S>(&self, sql: S, params: &[&(dyn ToSql + Sync)]) -> Result<Option<Row>, tokio_postgres::Error>
     where
         S: Into<String>,
     {
@@ -99,11 +90,11 @@ impl Connection {
             Ok(r) => {
                 span.record("found", &r.is_some());
                 span.record("error", &false);
-            }
+            },
             Err(e) => {
                 span.record("error", &true);
                 tracing::warn!(e = ?e, "Error executing query");
-            }
+            },
         };
 
         result
@@ -119,11 +110,7 @@ impl<'a> Transaction<'a> {
     ///
     /// # Returns
     /// The number of rows that were modified in the database
-    pub async fn execute<S>(
-        &self,
-        sql: S,
-        params: &[&(dyn ToSql + Sync)],
-    ) -> Result<u64, tokio_postgres::Error>
+    pub async fn execute<S>(&self, sql: S, params: &[&(dyn ToSql + Sync)]) -> Result<u64, tokio_postgres::Error>
     where
         S: Into<String>,
     {
@@ -144,18 +131,19 @@ impl<'a> Transaction<'a> {
             Ok(r) => {
                 span.record("result", &r);
                 span.record("error", &false);
-            }
+            },
             Err(e) => {
                 span.record("error", &true);
                 tracing::warn!(e = ?e, "Error executing query");
-            }
+            },
         };
 
         result
     }
 
     /// Execute a SQL script within the transaction.
-    /// Note that because this is considered to be an entire script and not just one statement, bind parameters are not available
+    /// Note that because this is considered to be an entire script and not just one statement, bind
+    /// parameters are not available
     ///
     /// # Parameters
     /// - `sql` - The SQL statement to execute
@@ -188,11 +176,7 @@ impl<'a> Transaction<'a> {
     ///
     /// # Returns
     /// The rows that were returned from the database
-    pub async fn query<S>(
-        &self,
-        sql: S,
-        params: &[&(dyn ToSql + Sync)],
-    ) -> Result<Vec<Row>, tokio_postgres::Error>
+    pub async fn query<S>(&self, sql: S, params: &[&(dyn ToSql + Sync)]) -> Result<Vec<Row>, tokio_postgres::Error>
     where
         S: Into<String>,
     {
@@ -213,11 +197,11 @@ impl<'a> Transaction<'a> {
             Ok(r) => {
                 span.record("rows", &r.len());
                 span.record("error", &false);
-            }
+            },
             Err(e) => {
                 span.record("error", &true);
                 tracing::warn!(e = ?e, "Error executing query");
-            }
+            },
         };
 
         result
@@ -226,10 +210,7 @@ impl<'a> Transaction<'a> {
     /// Commit the transaction.
     /// This consumes the transaction object, after which it is not usable.
     pub async fn commit(mut self) -> Result<(), tokio_postgres::Error> {
-        let span = tracing::trace_span!(
-            "database::Transaction::commit",
-            error = tracing::field::Empty,
-        );
+        let span = tracing::trace_span!("database::Transaction::commit", error = tracing::field::Empty,);
         let _enter = span.enter();
 
         let tx = self.0.take().unwrap();

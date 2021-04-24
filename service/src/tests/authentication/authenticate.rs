@@ -1,8 +1,9 @@
-use crate::tests::suite::TestSuite;
 use actix_web::test::TestRequest;
 use assert2::check;
 use insta::assert_json_snapshot;
 use serde_json::json;
+
+use crate::tests::suite::TestSuite;
 
 #[actix_rt::test]
 async fn empty_body() {

@@ -1,6 +1,7 @@
+use std::str::FromStr;
+
 use postgres_types::FromSql;
 use serde::Serialize;
-use std::str::FromStr;
 
 /// The email address of a user.
 #[derive(Debug, PartialEq, Serialize, FromSql)]
@@ -27,9 +28,10 @@ impl FromStr for Email {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use assert2::{check, let_assert};
     use test_case::test_case;
+
+    use super::*;
 
     #[test_case("testuser@example.com", "testuser@example.com" ; "Simple")]
     #[test_case("   testuser@example.com", "testuser@example.com" ; "Left padded")]

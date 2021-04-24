@@ -1,11 +1,14 @@
-use super::{Principal, SecurityContext};
-use crate::authorization::{service::AuthorizationService, AccessToken};
-use crate::http::problem::{Problem, UNAUTHORIZED};
+use std::{pin::Pin, sync::Arc};
+
 use actix_http::{http::header, Payload};
 use actix_web::{web::Data, FromRequest, HttpRequest};
 use futures::Future;
-use std::pin::Pin;
-use std::sync::Arc;
+
+use super::{Principal, SecurityContext};
+use crate::{
+    authorization::{service::AuthorizationService, AccessToken},
+    http::problem::{Problem, UNAUTHORIZED},
+};
 
 /// Enumeration of possible authentication states.
 #[derive(Debug)]
@@ -50,21 +53,18 @@ impl FromRequest for Authentication {
 
         Box::pin(async move {
             if let Some(authorization) = authorization {
-                let token = authorization
-                  .to_str()
-                  .map(|h| AccessToken(h.to_owned()))
-                  .map_err(|e| {
-                      tracing::warn!(e = ?e, authorization = ?authorization, "Failed to transform authorization header to string");
-                      Problem::from(UNAUTHORIZED)
-                  })?;
+                let token = authorization.to_str().map(|h| AccessToken(h.to_owned())).map_err(|e| {
+                    tracing::warn!(e = ?e, authorization = ?authorization, "Failed to transform authorization header to string");
+                    Problem::from(UNAUTHORIZED)
+                })?;
 
                 authorizer
-                  .authorize(&token)
-                  .map_err(|e| {
-                      tracing::warn!(e = ?e, authorization = ?authorization, "Failed to authorize access token");
-                      Problem::from(UNAUTHORIZED)
-                  })
-                  .map(Authentication::Authenticated)
+                    .authorize(&token)
+                    .map_err(|e| {
+                        tracing::warn!(e = ?e, authorization = ?authorization, "Failed to authorize access token");
+                        Problem::from(UNAUTHORIZED)
+                    })
+                    .map(Authentication::Authenticated)
             } else {
                 Ok(Authentication::Unauthenticated)
             }

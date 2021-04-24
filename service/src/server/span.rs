@@ -1,10 +1,17 @@
-use actix_service::{Service, Transform};
-use actix_web::{dev::MessageBody, dev::ServiceRequest, dev::ServiceResponse, Error};
-use futures::future::{ok, Ready};
-use futures::Future;
 use std::pin::Pin;
 
-/// Middleware for applying a tracing `Span` around the entire HTTP request, and tracking certain details on it.
+use actix_service::{Service, Transform};
+use actix_web::{
+    dev::{MessageBody, ServiceRequest, ServiceResponse},
+    Error,
+};
+use futures::{
+    future::{ok, Ready},
+    Future,
+};
+
+/// Middleware for applying a tracing `Span` around the entire HTTP request, and tracking certain
+/// details on it.
 pub struct Span;
 
 impl<S, B> Transform<S, ServiceRequest> for Span

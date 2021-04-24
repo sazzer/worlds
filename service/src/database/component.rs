@@ -1,5 +1,6 @@
-use super::Database;
 use std::sync::Arc;
+
+use super::Database;
 
 /// Component for the database connection.
 pub struct Component {

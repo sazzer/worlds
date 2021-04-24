@@ -1,12 +1,12 @@
 use std::collections::HashMap;
-use testcontainers::core::Port;
-use testcontainers::{Container, Docker, Image, WaitForMessage};
+
+use testcontainers::{core::Port, Container, Docker, Image, WaitForMessage};
 
 #[derive(Debug)]
 pub struct Postgres {
     arguments: PostgresArgs,
-    env_vars: HashMap<String, String>,
-    ports: Option<Vec<Port>>,
+    env_vars:  HashMap<String, String>,
+    ports:     Option<Vec<Port>>,
 }
 
 #[derive(Default, Debug, Clone)]

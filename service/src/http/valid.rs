@@ -1,11 +1,12 @@
-use crate::http::problem::{Problem, BAD_REQUEST, UNPROCESSABLE_ENTITY};
+use std::{ops::Deref, pin::Pin};
+
 use actix_http::Payload;
 use actix_web::{web::Json, FromRequest, HttpRequest};
 use futures::Future;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
-use std::ops::Deref;
-use std::pin::Pin;
+
+use crate::http::problem::{Problem, BAD_REQUEST, UNPROCESSABLE_ENTITY};
 
 /// Trait implemented by types that can be validated
 pub trait Validatable {
@@ -13,7 +14,8 @@ pub trait Validatable {
     fn schema() -> Value;
 }
 
-/// Wrapper around some type that will perform JSON Schema validation when parsing from the HTTP request.
+/// Wrapper around some type that will perform JSON Schema validation when parsing from the HTTP
+/// request.
 pub struct Valid<T>(T)
 where
     T: DeserializeOwned + Validatable;
@@ -46,8 +48,7 @@ where
             let validation = schema.validate(&value);
 
             if !validation.is_valid() {
-                return Err(Problem::from(UNPROCESSABLE_ENTITY)
-                    .with_extra("validationErrors", validation.errors));
+                return Err(Problem::from(UNPROCESSABLE_ENTITY).with_extra("validationErrors", validation.errors));
             }
 
             // Then attempt to parse the JSON into the target type.
@@ -75,12 +76,13 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use actix_web::{test, web, App};
     use assert2::check;
     use insta::assert_json_snapshot;
     use serde::Deserialize;
     use serde_json::json;
+
+    use super::*;
 
     #[derive(Deserialize)]
     pub struct Input {
@@ -142,10 +144,7 @@ mod tests {
         let _ = env_logger::try_init();
 
         let app = test::init_service(App::new().route("/", web::post().to(test_req))).await;
-        let req = test::TestRequest::post()
-            .uri("/")
-            .set_json(&json!({}))
-            .to_request();
+        let req = test::TestRequest::post().uri("/").set_json(&json!({})).to_request();
         let response = test::call_service(&app, req).await;
 
         check!(response.status() == 422);

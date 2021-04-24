@@ -1,5 +1,6 @@
-use super::{Database, Transaction};
 use rust_embed::RustEmbed;
+
+use super::{Database, Transaction};
 /// The embedded migrations files to apply.
 #[derive(RustEmbed)]
 #[folder = "migrations/"]
@@ -28,12 +29,9 @@ pub async fn migrate(db: &Database) {
             tx.batch_execute(std::str::from_utf8(&contents).expect("Failed to load migration"))
                 .await
                 .expect("Failed to apply migration");
-            tx.execute(
-                "INSERT INTO __migrations(migration_file) VALUES ($1)",
-                &[migration],
-            )
-            .await
-            .expect("Failed to record applied migration");
+            tx.execute("INSERT INTO __migrations(migration_file) VALUES ($1)", &[migration])
+                .await
+                .expect("Failed to record applied migration");
             count += 1;
         }
     }

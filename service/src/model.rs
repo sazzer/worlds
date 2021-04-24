@@ -7,7 +7,7 @@ use uuid::Uuid;
 /// - `<I>` - The type to use for the ID.
 #[derive(Debug)]
 pub struct Identity<I> {
-    pub id: I,
+    pub id:      I,
     pub version: Uuid,
     pub created: DateTime<Utc>,
     pub updated: DateTime<Utc>,
@@ -21,7 +21,7 @@ pub struct Identity<I> {
 #[derive(Debug)]
 pub struct Resource<I, D> {
     pub identity: Identity<I>,
-    pub data: D,
+    pub data:     D,
 }
 
 impl<I> Default for Identity<I>
@@ -32,7 +32,7 @@ where
         let now = Utc::now();
 
         Self {
-            id: I::default(),
+            id:      I::default(),
             version: Uuid::new_v4(),
             created: now,
             updated: now,

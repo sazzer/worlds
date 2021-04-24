@@ -1,20 +1,16 @@
-use crate::tests::{database::seed::SeedUser, suite::TestSuite};
 use actix_web::test::TestRequest;
 use assert2::check;
 use insta::assert_json_snapshot;
 use serde_json::json;
+
+use crate::tests::{database::seed::SeedUser, suite::TestSuite};
 
 #[actix_rt::test]
 async fn empty_body() {
     let suite = TestSuite::new().await;
 
     let response = suite
-        .inject(
-            TestRequest::post()
-                .uri("/authenticate/check")
-                .set_json(&json!({}))
-                .to_request(),
-        )
+        .inject(TestRequest::post().uri("/authenticate/check").set_json(&json!({})).to_request())
         .await;
 
     check!(response.status == 422);

@@ -1,3 +1,6 @@
+use actix_web::http::header::CacheDirective;
+use serde::Serialize;
+
 use crate::{
     http::{
         model::ResourceResponse,
@@ -5,16 +8,14 @@ use crate::{
     },
     users::{Email, UserId, UserResource, Username},
 };
-use actix_web::http::header::CacheDirective;
-use serde::Serialize;
 
 /// Full representation of a user on the HTTP API.
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FullUserModel {
-    pub user_id: UserId,
-    pub username: Username,
-    pub email: Email,
+    pub user_id:      UserId,
+    pub username:     Username,
+    pub email:        Email,
     pub display_name: String,
 }
 
@@ -22,17 +23,17 @@ pub struct FullUserModel {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SimpleUserModel {
-    pub user_id: UserId,
-    pub username: Username,
+    pub user_id:      UserId,
+    pub username:     Username,
     pub display_name: String,
 }
 
 impl From<UserResource> for FullUserModel {
     fn from(user: UserResource) -> Self {
         Self {
-            user_id: user.identity.id,
-            username: user.data.username,
-            email: user.data.email,
+            user_id:      user.identity.id,
+            username:     user.data.username,
+            email:        user.data.email,
             display_name: user.data.display_name,
         }
     }
@@ -41,8 +42,8 @@ impl From<UserResource> for FullUserModel {
 impl From<UserResource> for SimpleUserModel {
     fn from(user: UserResource) -> Self {
         Self {
-            user_id: user.identity.id,
-            username: user.data.username,
+            user_id:      user.identity.id,
+            username:     user.data.username,
             display_name: user.data.display_name,
         }
     }

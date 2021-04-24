@@ -1,14 +1,16 @@
+use std::sync::Arc;
+
+use actix_web::{
+    web::{Data, Path},
+    Either,
+};
+
 use super::model::{FullUserResponse, SimpleUserResponse};
 use crate::{
     authorization::{Authentication, Principal},
     http::problem::{Problem, NOT_FOUND},
     users::{UserId, UserService},
 };
-use actix_web::{
-    web::{Data, Path},
-    Either,
-};
-use std::sync::Arc;
 
 pub async fn handle(
     service: Data<Arc<UserService>>,
@@ -23,11 +25,7 @@ pub async fn handle(
 
     let user = service.get_user_by_id(&user_id).await.ok_or(NOT_FOUND)?;
 
-    if authentication
-        .principal()
-        .filter(|p| p == &&Principal::from(user_id))
-        .is_some()
-    {
+    if authentication.principal().filter(|p| p == &&Principal::from(user_id)).is_some() {
         Ok(Either::Left(user.into()))
     } else {
         Ok(Either::Right(user.into()))
