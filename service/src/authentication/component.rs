@@ -1,20 +1,31 @@
+use super::AuthenticationService;
+use crate::{authorization::AuthorizationService, server::RouteConfigurer, users::UserService};
+use actix_web::web::{post, resource, ServiceConfig};
 use std::sync::Arc;
 
-use crate::server::RouteConfigurer;
-use actix_web::web::{post, resource, ServiceConfig};
-
 /// Component for authentication.
-pub struct Component {}
+pub struct Component {
+    service: Arc<AuthenticationService>,
+}
 
 impl Component {
     /// Create a new authentication component.
-    pub fn new() -> Arc<Self> {
-        Arc::new(Self {})
+    pub fn new(
+        users_service: Arc<UserService>,
+        authorization_service: Arc<AuthorizationService>,
+    ) -> Arc<Self> {
+        let service = Arc::new(AuthenticationService::new(
+            users_service,
+            authorization_service,
+        ));
+
+        Arc::new(Self { service })
     }
 }
 
 impl RouteConfigurer for Component {
     fn configure_routes(&self, config: &mut ServiceConfig) {
+        config.data(self.service.clone());
         config.service(
             resource("/authenticate/check").route(post().to(super::endpoints::check::handle)),
         );

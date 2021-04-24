@@ -19,8 +19,11 @@ impl Service {
 
         let db = crate::database::component::Component::new(&settings.database_url).await;
         let authorization = crate::authorization::component::Component::new("secret");
-        let authentication = crate::authentication::component::Component::new();
         let users = crate::users::component::Component::new(db.database);
+        let authentication = crate::authentication::component::Component::new(
+            users.service.clone(),
+            authorization.service.clone(),
+        );
 
         let server = crate::server::component::Builder::default()
             .with_routes(authorization.clone())

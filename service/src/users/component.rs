@@ -8,7 +8,7 @@ use super::{repository::UserRepository, service::UserService};
 
 /// Component for working with user records.
 pub struct Component {
-    service: Arc<UserService>,
+    pub service: Arc<UserService>,
 }
 
 impl Component {
