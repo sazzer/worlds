@@ -1,3 +1,4 @@
+use argonautica::Hasher;
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
@@ -29,6 +30,18 @@ impl Default for SeedUser {
             email:        format!("{}@example.com", Uuid::new_v4()),
             password:     "".to_owned(),
         }
+    }
+}
+
+impl SeedUser {
+    pub fn with_password(self, password: &str) -> Self {
+        let hash = Hasher::default()
+            .with_password(password)
+            .opt_out_of_secret_key(true)
+            .hash()
+            .unwrap();
+
+        Self { password: hash, ..self }
     }
 }
 

@@ -41,7 +41,7 @@ test-case = "1.1.0"
 assert2 = "0.3.5"
 testcontainers = "0.12.0"
 lazy_static = "1.4.0"
-insta = "1.7.1"
+insta = { version = "1.7.1", features = ["redactions"] }
 
 [package.metadata.commands]
 clippy = "cargo clippy -Zunstable-options"

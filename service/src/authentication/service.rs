@@ -1,3 +1,5 @@
+mod authenticate;
+
 use std::sync::Arc;
 
 use crate::{authorization::AuthorizationService, users::UserService};

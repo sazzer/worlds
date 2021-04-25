@@ -1,10 +1,13 @@
-use actix_web::web::Json;
+use std::sync::Arc;
+
+use actix_web::web::{Data, Json};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
 use crate::{
-    authorization::AccessToken,
+    authentication::AuthenticationService,
+    authorization::{AccessToken, Principal},
     http::{
         problem::{Problem, UNAUTHORIZED},
         valid::{Valid, Validatable},
@@ -13,8 +16,23 @@ use crate::{
 };
 
 /// Handle the authentication request.
-pub async fn handle(_req: Valid<AuthenticateRequest>) -> Result<Json<AuthenticatedModel>, Problem> {
-    Err(Problem::from(UNAUTHORIZED))
+pub async fn handle(
+    req: Valid<AuthenticateRequest>,
+    service: Data<Arc<AuthenticationService>>,
+) -> Result<Json<AuthenticatedModel>, Problem> {
+    let (security_context, token) = service.authenticate(&req.username, &req.password).await.map_err(|e| {
+        tracing::warn!(username = ?req.username, e = ?e, "Authentication failed");
+
+        UNAUTHORIZED
+    })?;
+
+    Ok(Json(AuthenticatedModel {
+        token,
+        user_id: match security_context.principal {
+            Principal::User(user_id) => Some(user_id),
+        },
+        expires_at: security_context.expires,
+    }))
 }
 
 /// The incoming request to authenticate.
@@ -50,5 +68,6 @@ impl Validatable for AuthenticateRequest {
 #[derive(Debug, Serialize)]
 pub struct AuthenticatedModel {
     pub token:      AccessToken,
+    pub user_id:    Option<String>,
     pub expires_at: DateTime<Utc>,
 }
