@@ -1,4 +1,4 @@
-use std::{ops::Deref, pin::Pin};
+use std::{cmp::Ordering, ops::Deref, pin::Pin};
 
 use actix_http::Payload;
 use actix_web::{web::Json, FromRequest, HttpRequest};
@@ -48,7 +48,19 @@ where
             let validation = schema.validate(&value);
 
             if !validation.is_valid() {
-                return Err(Problem::from(UNPROCESSABLE_ENTITY).with_extra("validationErrors", validation.errors));
+                let mut errors = validation.errors;
+                errors.sort_by(|a, b| {
+                    let path = a.get_path().partial_cmp(b.get_path());
+                    let code = a.get_code().partial_cmp(b.get_code());
+
+                    match (path, code) {
+                        (Some(Ordering::Equal), Some(c)) => c,
+                        (Some(p), _) => p,
+                        _ => Ordering::Equal,
+                    }
+                });
+
+                return Err(Problem::from(UNPROCESSABLE_ENTITY).with_extra("validationErrors", errors));
             }
 
             // Then attempt to parse the JSON into the target type.

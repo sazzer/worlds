@@ -31,12 +31,12 @@ async fn empty_body() {
         {
           "code": "required",
           "title": "This property is required",
-          "path": "/username"
+          "path": "/password"
         },
         {
           "code": "required",
           "title": "This property is required",
-          "path": "/password"
+          "path": "/username"
         }
       ]
     }
@@ -72,12 +72,12 @@ async fn blank_fields() {
         {
           "code": "min_length",
           "title": "MinLength condition is not met",
-          "path": "/username"
+          "path": "/password"
         },
         {
           "code": "min_length",
           "title": "MinLength condition is not met",
-          "path": "/password"
+          "path": "/username"
         }
       ]
     }

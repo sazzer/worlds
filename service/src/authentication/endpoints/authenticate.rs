@@ -1,13 +1,13 @@
 use std::sync::Arc;
 
 use actix_web::web::{Data, Json};
-use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_json::{json, Value};
 
+use super::model::AuthenticatedModel;
 use crate::{
     authentication::AuthenticationService,
-    authorization::{AccessToken, Principal},
+    authorization::Principal,
     http::{
         problem::{Problem, UNAUTHORIZED},
         valid::{Valid, Validatable},
@@ -59,12 +59,4 @@ impl Validatable for AuthenticateRequest {
             ]
         })
     }
-}
-
-/// Model to return if authentication was a success
-#[derive(Debug, Serialize)]
-pub struct AuthenticatedModel {
-    pub token:      AccessToken,
-    pub user_id:    Option<String>,
-    pub expires_at: DateTime<Utc>,
 }

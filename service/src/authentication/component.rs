@@ -24,5 +24,6 @@ impl RouteConfigurer for Component {
         config.data(self.service.clone());
         config.service(resource("/authenticate/check").route(post().to(super::endpoints::check::handle)));
         config.service(resource("/authenticate/authenticate").route(post().to(super::endpoints::authenticate::handle)));
+        config.service(resource("/authenticate/register").route(post().to(super::endpoints::register::handle)));
     }
 }

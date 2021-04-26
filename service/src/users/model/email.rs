@@ -1,10 +1,12 @@
 use std::str::FromStr;
 
 use postgres_types::FromSql;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+
+use crate::http::valid::Validatable;
 
 /// The email address of a user.
-#[derive(Debug, PartialEq, Serialize, FromSql)]
+#[derive(Debug, PartialEq, Deserialize, Serialize, FromSql)]
 pub struct Email(String);
 
 #[derive(Debug, PartialEq, thiserror::Error)]
@@ -23,6 +25,16 @@ impl FromStr for Email {
         } else {
             Ok(Email(trimmed.to_owned()))
         }
+    }
+}
+
+impl Validatable for Email {
+    fn schema() -> serde_json::Value {
+        serde_json::json!({
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[^@]+@[^@]+\\.[^@\\.]+$"
+        })
     }
 }
 
