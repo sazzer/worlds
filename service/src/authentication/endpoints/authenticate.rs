@@ -47,10 +47,7 @@ impl Validatable for AuthenticateRequest {
         json!({
             "type": "object",
             "properties": {
-                "username": {
-                    "type": "string",
-                    "minLength": 1
-                },
+                "username": Username::schema(),
                 "password": {
                     "type": "string",
                     "minLength": 1

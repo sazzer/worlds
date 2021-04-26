@@ -30,10 +30,7 @@ impl Validatable for CheckRequest {
         json!({
             "type": "object",
             "properties": {
-                "username": {
-                    "type": "string",
-                    "minLength": 1
-                },
+                "username": Username::schema()
             },
             "required": [
                 "username"

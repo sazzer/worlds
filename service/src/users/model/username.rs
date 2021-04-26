@@ -4,6 +4,8 @@ use bytes::BytesMut;
 use postgres_types::{accepts, to_sql_checked, FromSql, IsNull, ToSql, Type};
 use serde::{Deserialize, Serialize};
 
+use crate::http::valid::Validatable;
+
 /// The Username of a user.
 #[derive(Debug, PartialEq, Deserialize, Serialize, FromSql)]
 pub struct Username(String);
@@ -33,6 +35,15 @@ impl ToSql for Username {
 
     fn to_sql(&self, t: &Type, w: &mut BytesMut) -> Result<IsNull, Box<dyn std::error::Error + Sync + Send>> {
         self.0.to_sql(t, w)
+    }
+}
+
+impl Validatable for Username {
+    fn schema() -> serde_json::Value {
+        serde_json::json!({
+            "type": "string",
+            "minLength": 1
+        })
     }
 }
 
