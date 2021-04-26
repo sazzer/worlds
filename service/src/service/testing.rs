@@ -35,7 +35,7 @@ impl Service {
             .authorization_service
             .generate_security_context(Principal::User(user_id.into()));
 
-        ("Authorization", token.0)
+        ("Authorization", format!("Bearer {}", token.0))
     }
 }
 

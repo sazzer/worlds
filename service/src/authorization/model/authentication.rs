@@ -53,8 +53,13 @@ impl FromRequest for Authentication {
 
         Box::pin(async move {
             if let Some(authorization) = authorization {
-                let token = authorization.to_str().map(|h| AccessToken(h.to_owned())).map_err(|e| {
+                let token = authorization.to_str().map_err(|e| {
                     tracing::warn!(e = ?e, authorization = ?authorization, "Failed to transform authorization header to string");
+                    Problem::from(UNAUTHORIZED)
+                })?;
+
+                let token = token.strip_prefix("Bearer ").map(|h| AccessToken(h.to_owned())).ok_or_else(|| {
+                    tracing::warn!(authorization = ?authorization, "Authorization is not a Bearer token");
                     Problem::from(UNAUTHORIZED)
                 })?;
 

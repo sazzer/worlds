@@ -225,7 +225,7 @@ async fn use_token() {
         .inject(
             TestRequest::get()
                 .uri("/users/4ea96dc3-df11-43c0-8a33-a0813f03937f")
-                .append_header(("Authorization", format!("{}", token)))
+                .append_header(("Authorization", format!("Bearer {}", token)))
                 .to_request(),
         )
         .await;
