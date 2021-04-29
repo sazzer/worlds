@@ -77,7 +77,7 @@ impl Connection {
         let sql = sql.into();
 
         let span = tracing::trace_span!(
-            "database::Connection::query",
+            "database::Connection::query_opt",
             sql = sql.as_str(),
             found = tracing::field::Empty,
             error = tracing::field::Empty,
@@ -89,6 +89,38 @@ impl Connection {
         match &result {
             Ok(r) => {
                 span.record("found", &r.is_some());
+                span.record("error", &false);
+            },
+            Err(e) => {
+                span.record("error", &true);
+                tracing::warn!(e = ?e, "Error executing query");
+            },
+        };
+
+        result
+    }
+
+    /// Perform a SQL query on the connection, expecting exactly one row.
+    ///
+    /// # Parameters
+    /// - `sql` - The SQL query to perform
+    /// - `params` - Any bind parameters for the SQL query
+    ///
+    /// # Returns
+    /// The row that was returned from the database.
+    pub async fn query_one<S>(&self, sql: S, params: &[&(dyn ToSql + Sync)]) -> Result<Row, tokio_postgres::Error>
+    where
+        S: Into<String>,
+    {
+        let sql = sql.into();
+
+        let span = tracing::trace_span!("database::Connection::query_one", sql = sql.as_str(), error = tracing::field::Empty,);
+        let _enter = span.enter();
+
+        let result = self.0.query_one(sql.as_str(), params).await;
+
+        match &result {
+            Ok(_) => {
                 span.record("error", &false);
             },
             Err(e) => {

@@ -20,6 +20,16 @@ pub struct Valid<T>(T)
 where
     T: DeserializeOwned + Validatable;
 
+impl<T> Valid<T>
+where
+    T: DeserializeOwned + Validatable,
+{
+    /// Unwrap the validated data, returning it without the wrapper.
+    pub fn unwrap(self) -> T {
+        self.0
+    }
+}
+
 impl<T> FromRequest for Valid<T>
 where
     T: DeserializeOwned + Validatable,

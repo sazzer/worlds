@@ -1,6 +1,10 @@
 mod authenticate;
+mod register;
 
 use std::sync::Arc;
+
+pub use authenticate::*;
+pub use register::*;
 
 use crate::{authorization::AuthorizationService, users::UserService};
 

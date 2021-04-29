@@ -1,5 +1,6 @@
 use argonautica::{Hasher, Verifier};
-use postgres_types::FromSql;
+use bytes::BytesMut;
+use postgres_types::{accepts, to_sql_checked, FromSql, IsNull, ToSql, Type};
 
 /// Wrapper around a hashed password.
 #[derive(FromSql)]
@@ -17,6 +18,15 @@ impl Password {
         let hash = Hasher::default().with_password(input).opt_out_of_secret_key(true).hash().unwrap();
 
         Password(hash)
+    }
+}
+
+impl ToSql for Password {
+    accepts!(TEXT, VARCHAR);
+    to_sql_checked!();
+
+    fn to_sql(&self, t: &Type, w: &mut BytesMut) -> Result<IsNull, Box<dyn std::error::Error + Sync + Send>> {
+        self.0.to_sql(t, w)
     }
 }
 

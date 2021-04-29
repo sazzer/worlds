@@ -6,17 +6,36 @@ use serde_json::{json, Value};
 
 use super::model::AuthenticatedModel;
 use crate::{
-    authentication::AuthenticationService,
+    authentication::{AuthenticationService, Registration},
+    authorization::Principal,
     http::{
         problem::Problem,
         valid::{Valid, Validatable},
     },
-    users::{Email, Username},
+    users::{Email, Password, Username},
 };
 
 /// Handle the authentication request.
-pub async fn handle(_req: Valid<RegisterRequest>, _service: Data<Arc<AuthenticationService>>) -> Result<Json<AuthenticatedModel>, Problem> {
-    todo!()
+pub async fn handle(req: Valid<RegisterRequest>, service: Data<Arc<AuthenticationService>>) -> Result<Json<AuthenticatedModel>, Problem> {
+    let req = req.unwrap();
+
+    let (security_context, token) = service
+        .register(Registration {
+            username:     req.username,
+            email:        req.email,
+            display_name: req.display_name,
+            password:     Password::from_plaintext(&req.password),
+        })
+        .await
+        .unwrap();
+
+    Ok(Json(AuthenticatedModel {
+        token,
+        user_id: match security_context.principal {
+            Principal::User(user_id) => Some(user_id),
+        },
+        expires_at: security_context.expires,
+    }))
 }
 
 /// The incoming request to authenticate.
