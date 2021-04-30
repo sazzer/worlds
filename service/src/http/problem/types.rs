@@ -68,3 +68,10 @@ pub const UNPROCESSABLE_ENTITY: SimpleProblemType = SimpleProblemType {
     problem_title: "Unprocessable Entity",
     status_code:   StatusCode::UNPROCESSABLE_ENTITY,
 };
+
+/// Problem to indicate that an internal server error occurred.
+pub const INTERNAL_SERVER_ERROR: SimpleProblemType = SimpleProblemType {
+    problem_type:  "about:blank",
+    problem_title: "Internal Server Error",
+    status_code:   StatusCode::INTERNAL_SERVER_ERROR,
+};

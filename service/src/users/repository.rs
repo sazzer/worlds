@@ -4,6 +4,8 @@ mod save_user;
 
 use std::sync::Arc;
 
+pub use save_user::SaveUserError;
+
 use crate::database::Database;
 
 /// Repository of user records.

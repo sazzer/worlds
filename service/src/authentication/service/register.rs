@@ -1,7 +1,7 @@
 use super::AuthenticationService;
 use crate::{
     authorization::{AccessToken, SecurityContext},
-    users::{Email, Password, UserData, Username},
+    users::{CreateUserError, Email, Password, UserData, Username},
 };
 
 /// Details needed to register a new user.
@@ -18,6 +18,9 @@ pub struct Registration {
 pub enum RegistrationError {
     #[error("The username is already registered")]
     DuplicateUsername,
+
+    #[error("An unknown error occured")]
+    UnknownError,
 }
 
 impl AuthenticationService {
@@ -29,7 +32,7 @@ impl AuthenticationService {
     /// # Returns
     /// The authentication details for the new user.
     pub async fn register(&self, registration: Registration) -> Result<(SecurityContext, AccessToken), RegistrationError> {
-        let user = self.users_service.create_user(registration.into()).await.unwrap();
+        let user = self.users_service.create_user(registration.into()).await?;
 
         let (security_context, access_token) = self.authorization_service.generate_security_context(user.identity.id.into());
 
@@ -44,6 +47,15 @@ impl From<Registration> for UserData {
             email:        registration.email,
             display_name: registration.display_name,
             password:     registration.password,
+        }
+    }
+}
+
+impl From<CreateUserError> for RegistrationError {
+    fn from(e: CreateUserError) -> Self {
+        match e {
+            CreateUserError::DuplicateUsername => Self::DuplicateUsername,
+            CreateUserError::UnknownError => Self::UnknownError,
         }
     }
 }

@@ -32,10 +32,12 @@ impl TestSuite {
 
     /// Inject a request into the service and return the response.
     pub async fn inject(&self, req: Request) -> TestResponse {
+        tracing::info!(req = ?req, "===== Sending Request =====");
         self.service.inject(req).await
     }
 
     pub async fn seed(&self, data: &dyn SeedData) {
+        tracing::info!("===== Seeding data =====");
         self.db.seed(data).await;
     }
 

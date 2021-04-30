@@ -4,12 +4,12 @@ use actix_web::web::{Data, Json};
 use serde::Deserialize;
 use serde_json::{json, Value};
 
-use super::model::AuthenticatedModel;
+use super::{model::AuthenticatedModel, problems::DUPLICATE_USERNAME};
 use crate::{
-    authentication::{AuthenticationService, Registration},
+    authentication::{AuthenticationService, Registration, RegistrationError},
     authorization::Principal,
     http::{
-        problem::Problem,
+        problem::{Problem, INTERNAL_SERVER_ERROR},
         valid::{Valid, Validatable},
     },
     users::{Email, Password, Username},
@@ -27,7 +27,10 @@ pub async fn handle(req: Valid<RegisterRequest>, service: Data<Arc<Authenticatio
             password:     Password::from_plaintext(&req.password),
         })
         .await
-        .unwrap();
+        .map_err(|e| match e {
+            RegistrationError::DuplicateUsername => DUPLICATE_USERNAME,
+            RegistrationError::UnknownError => INTERNAL_SERVER_ERROR,
+        })?;
 
     Ok(Json(AuthenticatedModel {
         token,

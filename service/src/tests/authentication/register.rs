@@ -3,7 +3,7 @@ use assert2::check;
 use insta::assert_json_snapshot;
 use serde_json::json;
 
-use crate::tests::suite::TestSuite;
+use crate::tests::{database::seed::SeedUser, suite::TestSuite};
 
 #[actix_rt::test]
 async fn empty_body() {
@@ -187,4 +187,41 @@ async fn success_refetch() {
         "email": "testuser@example.com",
         "displayName": "Test User"
       }"###);
+}
+
+#[actix_rt::test]
+async fn duplicate_username() {
+    let user = SeedUser {
+        username: "testuser".to_owned(),
+        ..SeedUser::default()
+    };
+
+    let suite = TestSuite::new().await;
+    suite.seed(&user).await;
+
+    let response = suite
+        .inject(
+            TestRequest::post()
+                .uri("/authenticate/register")
+                .set_json(&json!({
+                  "username": "testuser",
+                  "email": "testuser@example.com",
+                  "displayName": "Test User",
+                  "password": "testuser123"
+                }))
+                .to_request(),
+        )
+        .await;
+
+    check!(response.status == 422);
+
+    check!(response.headers.get("content-type").unwrap() == "application/problem+json");
+
+    assert_json_snapshot!(response.to_json().unwrap(), @r###"
+    {
+      "type": "tag:worlds,2021:problems/authentication/register/duplicate_username",
+      "title": "Duplicate Username",
+      "status": 422
+    }
+    "###);
 }
