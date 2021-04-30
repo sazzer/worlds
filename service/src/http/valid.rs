@@ -1,11 +1,12 @@
 use std::{cmp::Ordering, ops::Deref, pin::Pin};
 
-use actix_http::Payload;
+use actix_http::{http::StatusCode, Payload};
 use actix_web::{web::Json, FromRequest, HttpRequest};
 use futures::Future;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
 
+use super::problem::SimpleProblemType;
 use crate::http::problem::{Problem, BAD_REQUEST, UNPROCESSABLE_ENTITY};
 
 /// Trait implemented by types that can be validated
@@ -70,7 +71,7 @@ where
                     }
                 });
 
-                return Err(Problem::from(UNPROCESSABLE_ENTITY).with_extra("validationErrors", errors));
+                return Err(Problem::from(VALIDATION_ERROR).with_extra("validationErrors", errors));
             }
 
             // Then attempt to parse the JSON into the target type.
@@ -95,6 +96,13 @@ where
         &self.0
     }
 }
+
+/// Problem to indicate that a request failed validation.
+const VALIDATION_ERROR: SimpleProblemType = SimpleProblemType {
+    problem_type:  "tag:worlds,2021:problems/validation",
+    problem_title: "Request body failed validation",
+    status_code:   StatusCode::UNPROCESSABLE_ENTITY,
+};
 
 #[cfg(test)]
 mod tests {
@@ -177,8 +185,8 @@ mod tests {
 
         assert_json_snapshot!(serde_json::from_slice::<Value>(&body).unwrap(), @r###"
         {
-          "type": "about:blank",
-          "title": "Unprocessable Entity",
+          "type": "tag:worlds,2021:problems/validation",
+          "title": "Request body failed validation",
           "status": 422,
           "validationErrors": [
             {
@@ -212,8 +220,8 @@ mod tests {
 
         assert_json_snapshot!(serde_json::from_slice::<Value>(&body).unwrap(), @r###"
         {
-          "type": "about:blank",
-          "title": "Unprocessable Entity",
+          "type": "tag:worlds,2021:problems/validation",
+          "title": "Request body failed validation",
           "status": 422,
           "validationErrors": [
             {
@@ -247,8 +255,8 @@ mod tests {
 
         assert_json_snapshot!(serde_json::from_slice::<Value>(&body).unwrap(), @r###"
         {
-          "type": "about:blank",
-          "title": "Unprocessable Entity",
+          "type": "tag:worlds,2021:problems/validation",
+          "title": "Request body failed validation",
           "status": 422,
           "validationErrors": [
             {

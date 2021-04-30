@@ -24,8 +24,8 @@ async fn empty_body() {
 
     assert_json_snapshot!(response.to_json().unwrap(), @r###"
     {
-      "type": "about:blank",
-      "title": "Unprocessable Entity",
+      "type": "tag:worlds,2021:problems/validation",
+      "title": "Request body failed validation",
       "status": 422,
       "validationErrors": [
         {
@@ -65,8 +65,8 @@ async fn blank_fields() {
 
     assert_json_snapshot!(response.to_json().unwrap(), @r###"
     {
-      "type": "about:blank",
-      "title": "Unprocessable Entity",
+      "type": "tag:worlds,2021:problems/validation",
+      "title": "Request body failed validation",
       "status": 422,
       "validationErrors": [
         {
