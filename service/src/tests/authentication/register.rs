@@ -133,12 +133,12 @@ async fn success() {
         ".token" => "[token]",
           ".expires_at" => "[expires_at]",
         }, @r###"
-        {
-          "token": "[token]",
-          "user_id": "[user_id]",
-          "expires_at": "[expires_at]"
-        }
-        "###);
+    {
+      "token": "[token]",
+      "userId": "499d6d44-db0b-4d98-b052-049b92c1e7e2",
+      "expiresAt": "2021-05-31T10:05:13Z"
+    }
+    "###);
 }
 
 #[actix_rt::test]

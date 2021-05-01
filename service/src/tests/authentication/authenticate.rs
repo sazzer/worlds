@@ -183,8 +183,8 @@ async fn correct_password() {
     }, @r###"
     {
       "token": "[token]",
-      "user_id": "4ea96dc3-df11-43c0-8a33-a0813f03937f",
-      "expires_at": "[expires_at]"
+      "userId": "4ea96dc3-df11-43c0-8a33-a0813f03937f",
+      "expiresAt": "2021-05-31T10:04:42Z"
     }
     "###);
 }
