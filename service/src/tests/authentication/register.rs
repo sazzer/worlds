@@ -129,14 +129,14 @@ async fn success() {
     check!(response.headers.get("content-type").unwrap() == "application/json");
 
     assert_json_snapshot!(response.to_json().unwrap(), {
-        ".user_id" => "[user_id]",
+        ".userId" => "[user_id]",
         ".token" => "[token]",
-          ".expires_at" => "[expires_at]",
-        }, @r###"
+        ".expiresAt" => "[expires_at]",
+      }, @r###"
     {
       "token": "[token]",
-      "userId": "499d6d44-db0b-4d98-b052-049b92c1e7e2",
-      "expiresAt": "2021-05-31T10:05:13Z"
+      "userId": "[user_id]",
+      "expiresAt": "[expires_at]"
     }
     "###);
 }
@@ -162,7 +162,7 @@ async fn success_refetch() {
     check!(response.status == 200);
 
     let response = response.to_json().unwrap();
-    let user_id = response.get("user_id").unwrap().as_str().unwrap();
+    let user_id = response.get("userId").unwrap().as_str().unwrap();
     let token = response.get("token").unwrap().as_str().unwrap();
 
     let response = suite
@@ -224,4 +224,81 @@ async fn duplicate_username() {
       "status": 422
     }
     "###);
+}
+
+#[actix_rt::test]
+async fn duplicate_email() {
+    let user = SeedUser {
+        username: "other".to_owned(),
+        email: "testuser@example.com".to_owned(),
+        ..SeedUser::default()
+    };
+
+    let suite = TestSuite::new().await;
+    suite.seed(&user).await;
+
+    let response = suite
+        .inject(
+            TestRequest::post()
+                .uri("/authenticate/register")
+                .set_json(&json!({
+                  "username": "testuser",
+                  "email": "testuser@example.com",
+                  "displayName": "Test User",
+                  "password": "testuser123"
+                }))
+                .to_request(),
+        )
+        .await;
+
+    check!(response.status == 200);
+
+    check!(response.headers.get("content-type").unwrap() == "application/json");
+
+    assert_json_snapshot!(response.to_json().unwrap(), {
+        ".userId" => "[user_id]",
+        ".token" => "[token]",
+        ".expiresAt" => "[expires_at]",
+      }, @r###"
+    {
+      "token": "[token]",
+      "userId": "[user_id]",
+      "expiresAt": "[expires_at]"
+    }
+    "###);
+}
+
+#[actix_rt::test]
+async fn success_authenticate() {
+    let suite = TestSuite::new().await;
+
+    let response = suite
+        .inject(
+            TestRequest::post()
+                .uri("/authenticate/register")
+                .set_json(&json!({
+                  "username": "testuser",
+                  "email": "testuser@example.com",
+                  "displayName": "Test User",
+                  "password": "testuser123"
+                }))
+                .to_request(),
+        )
+        .await;
+
+    check!(response.status == 200);
+
+    let response = suite
+        .inject(
+            TestRequest::post()
+                .uri("/authenticate/authenticate")
+                .set_json(&json!({
+                  "username": "testuser",
+                  "password": "testuser123"
+                }))
+                .to_request(),
+        )
+        .await;
+
+    check!(response.status == 200);
 }
