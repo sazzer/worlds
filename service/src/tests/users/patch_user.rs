@@ -152,3 +152,75 @@ async fn unknown_user() {
         }
         "###);
 }
+
+#[actix_rt::test]
+async fn invalid_email() {
+    let suite = TestSuite::new().await;
+
+    let response = suite
+        .inject(
+            TestRequest::patch()
+                .uri("/users/4ea96dc3-df11-43c0-8a33-a0813f03937f")
+                .append_header(suite.authenticate("4ea96dc3-df11-43c0-8a33-a0813f03937f"))
+                .set_json(&json!({
+                    "email": "invalid"
+                }))
+                .to_request(),
+        )
+        .await;
+
+    check!(response.status == 422);
+
+    check!(response.headers.get("content-type").unwrap() == "application/problem+json");
+
+    assert_json_snapshot!(response.to_json().unwrap(), @r###"
+    {
+      "type": "tag:worlds,2021:problems/validation",
+      "title": "Request body failed validation",
+      "status": 422,
+      "validationErrors": [
+        {
+          "code": "pattern",
+          "title": "Pattern condition is not met",
+          "path": "/email"
+        }
+      ]
+    }
+    "###);
+}
+
+#[actix_rt::test]
+async fn missing_old_password() {
+    let suite = TestSuite::new().await;
+
+    let response = suite
+        .inject(
+            TestRequest::patch()
+                .uri("/users/4ea96dc3-df11-43c0-8a33-a0813f03937f")
+                .append_header(suite.authenticate("4ea96dc3-df11-43c0-8a33-a0813f03937f"))
+                .set_json(&json!({
+                    "password": "Pa55word"
+                }))
+                .to_request(),
+        )
+        .await;
+
+    check!(response.status == 422);
+
+    check!(response.headers.get("content-type").unwrap() == "application/problem+json");
+
+    assert_json_snapshot!(response.to_json().unwrap(), @r###"
+    {
+      "type": "tag:worlds,2021:problems/validation",
+      "title": "Request body failed validation",
+      "status": 422,
+      "validationErrors": [
+        {
+          "code": "required",
+          "title": "This property is required",
+          "path": "/then/oldPassword"
+        }
+      ]
+    }
+    "###);
+}
