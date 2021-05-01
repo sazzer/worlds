@@ -1,14 +1,11 @@
 use std::sync::Arc;
 
-use actix_web::{
-    web::{Data, Path},
-    Either,
-};
+use actix_web::web::{Data, Path};
 
-use super::model::{FullUserResponse, SimpleUserResponse};
+use super::model::FullUserResponse;
 use crate::{
     authorization::{Authentication, Principal},
-    http::problem::{Problem, NOT_FOUND},
+    http::problem::{Problem, FORBIDDEN, NOT_FOUND},
     users::{UserId, UserService},
 };
 
@@ -16,18 +13,16 @@ pub async fn handle(
     service: Data<Arc<UserService>>,
     path: Path<String>,
     authentication: Authentication,
-) -> Result<Either<FullUserResponse, SimpleUserResponse>, Problem> {
+) -> Result<FullUserResponse, Problem> {
     let user_id: UserId = path.parse().map_err(|e| {
         tracing::warn!(e = ?e, path = ?path, "Failed to parse User ID");
 
-        NOT_FOUND
+        FORBIDDEN
     })?;
+
+    authentication.same_principal(&Principal::from(&user_id))?;
 
     let user = service.get_user_by_id(&user_id).await.ok_or(NOT_FOUND)?;
 
-    if authentication.same_principal(&Principal::from(&user_id)).is_ok() {
-        Ok(Either::Left(user.into()))
-    } else {
-        Ok(Either::Right(user.into()))
-    }
+    Ok(user.into())
 }

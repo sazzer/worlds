@@ -58,6 +58,13 @@ impl From<UserId> for Principal {
         Self::User(user_id.0.to_string())
     }
 }
+
+impl From<&UserId> for Principal {
+    fn from(user_id: &UserId) -> Self {
+        Self::User(user_id.0.to_string())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use assert2::{check, let_assert};

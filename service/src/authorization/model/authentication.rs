@@ -7,7 +7,7 @@ use futures::Future;
 use super::{Principal, SecurityContext};
 use crate::{
     authorization::{service::AuthorizationService, AccessToken},
-    http::problem::{Problem, UNAUTHORIZED},
+    http::problem::{Problem, FORBIDDEN, UNAUTHORIZED},
 };
 
 /// Enumeration of possible authentication states.
@@ -36,6 +36,15 @@ impl Authentication {
     /// Get the authenticated principal that this authentication represents, if there is one.
     pub fn principal(&self) -> Option<&Principal> {
         self.security_context().map(|sc| &sc.principal)
+    }
+
+    /// Check if the authenticated principal matches the one that is required.
+    pub fn same_principal(&self, principal: &Principal) -> Result<(), Problem> {
+        match self.principal() {
+            None => Err(Problem::from(UNAUTHORIZED)),
+            Some(p) if p != principal => Err(Problem::from(FORBIDDEN)),
+            _ => Ok(()),
+        }
     }
 }
 

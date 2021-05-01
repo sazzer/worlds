@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use actix_web::web::{get, resource, ServiceConfig};
+use actix_web::web::{get, patch, resource, ServiceConfig};
 
 use super::{repository::UserRepository, service::UserService};
 use crate::{database::Database, server::RouteConfigurer};
@@ -24,6 +24,10 @@ impl RouteConfigurer for Component {
     fn configure_routes(&self, config: &mut ServiceConfig) {
         config.data(self.service.clone());
 
-        config.service(resource("/users/{id}").route(get().to(super::endpoints::get_user::handle)));
+        config.service(
+            resource("/users/{id}")
+                .route(get().to(super::endpoints::get_user::handle))
+                .route(patch().to(super::endpoints::patch_user::handle)),
+        );
     }
 }

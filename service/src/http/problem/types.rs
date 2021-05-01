@@ -55,6 +55,13 @@ pub const UNAUTHORIZED: SimpleProblemType = SimpleProblemType {
     status_code:   StatusCode::UNAUTHORIZED,
 };
 
+/// Problem to indicate that a request was forbidden.
+pub const FORBIDDEN: SimpleProblemType = SimpleProblemType {
+    problem_type:  "about:blank",
+    problem_title: "Forbidden",
+    status_code:   StatusCode::FORBIDDEN,
+};
+
 /// Problem to indicate that a request was a bad request.
 pub const BAD_REQUEST: SimpleProblemType = SimpleProblemType {
     problem_type:  "about:blank",
