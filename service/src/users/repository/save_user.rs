@@ -1,7 +1,10 @@
 use tokio_postgres::error::{DbError, SqlState};
 
 use super::UserRepository;
-use crate::users::UserResource;
+use crate::{
+    model::Identity,
+    users::{UserData, UserId, UserResource},
+};
 
 #[derive(Debug, PartialEq, thiserror::Error)]
 pub enum SaveUserError {
@@ -21,19 +24,21 @@ impl UserRepository {
     /// # Returns
     /// The created user resource.
     #[tracing::instrument(skip(self))]
-    pub async fn create_user(&self, user: &UserResource) -> Result<UserResource, SaveUserError> {
+    pub async fn create_user(&self, user: &UserData) -> Result<UserResource, SaveUserError> {
         let conn = self.database.connect().await;
+
+        let identity = Identity::<UserId>::default();
 
         let created: UserResource = conn.query_one("INSERT INTO users(user_id, version, created, updated, username, display_name, email, password) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *", 
         &[
-          &user.identity.id,
-          &user.identity.version,
-          &user.identity.created,
-          &user.identity.updated,
-          &user.data.username,
-          &user.data.display_name,
-          &user.data.email,
-          &user.data.password,
+          &identity.id,
+          &identity.version,
+          &identity.created,
+          &identity.updated,
+          &user.username,
+          &user.display_name,
+          &user.email,
+          &user.password,
           ])
             .await
             .map(|row| row.into())?;

@@ -1,8 +1,5 @@
 use super::UserService;
-use crate::{
-    model::Identity,
-    users::{repository::SaveUserError, UserData, UserResource},
-};
+use crate::users::{repository::SaveUserError, UserData, UserResource};
 
 #[derive(Debug, PartialEq, thiserror::Error)]
 pub enum CreateUserError {
@@ -22,11 +19,6 @@ impl UserService {
     /// # Returns
     /// The newly created user.
     pub async fn create_user(&self, user: UserData) -> Result<UserResource, CreateUserError> {
-        let user = UserResource {
-            identity: Identity::default(),
-            data:     user,
-        };
-
         let user = self.repository.create_user(&user).await?;
 
         Ok(user)
