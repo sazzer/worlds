@@ -43,7 +43,7 @@ impl Authentication {
         match self.principal() {
             None => Err(Problem::from(UNAUTHORIZED)),
             Some(p) if p != principal => Err(Problem::from(FORBIDDEN)),
-            _ => Ok(()),
+            Some(_) => Ok(()),
         }
     }
 }
