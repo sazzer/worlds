@@ -34,6 +34,7 @@ pub async fn handle(
         .update_user_by_id(&user_id, move |user| {
             if let Some(old_password) = request.old_password {
                 if user.password != &old_password {
+                    todo!("Return correct error");
                     return Err(NOT_FOUND);
                 }
             }

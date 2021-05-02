@@ -226,7 +226,7 @@ async fn missing_old_password() {
 }
 
 #[actix_rt::test]
-async fn change_email() {
+async fn change_email_and_name() {
     let user = SeedUser {
         user_id: "4ea96dc3-df11-43c0-8a33-a0813f03937f".parse().unwrap(),
         version: "d61dac0c-45f2-49ed-85cc-f24bbe939404".parse().unwrap(),
@@ -245,7 +245,8 @@ async fn change_email() {
                 .uri("/users/4ea96dc3-df11-43c0-8a33-a0813f03937f")
                 .append_header(suite.authenticate("4ea96dc3-df11-43c0-8a33-a0813f03937f"))
                 .set_json(&json!({
-                    "email": "new@example.com"
+                    "email": "new@example.com",
+                    "displayName": "New User",
                 }))
                 .to_request(),
         )
@@ -262,7 +263,117 @@ async fn change_email() {
       "userId": "4ea96dc3-df11-43c0-8a33-a0813f03937f",
       "username": "testuser",
       "email": "new@example.com",
+      "displayName": "New User"
+    }
+    "###);
+}
+
+#[actix_rt::test]
+async fn change_email_and_name_refetch() {
+    let user = SeedUser {
+        user_id: "4ea96dc3-df11-43c0-8a33-a0813f03937f".parse().unwrap(),
+        version: "d61dac0c-45f2-49ed-85cc-f24bbe939404".parse().unwrap(),
+        username: "testuser".to_owned(),
+        email: "testuser@example.com".to_owned(),
+        display_name: "Test User".to_owned(),
+        ..SeedUser::default()
+    };
+
+    let suite = TestSuite::new().await;
+    suite.seed(&user).await;
+
+    let response = suite
+        .inject(
+            TestRequest::patch()
+                .uri("/users/4ea96dc3-df11-43c0-8a33-a0813f03937f")
+                .append_header(suite.authenticate("4ea96dc3-df11-43c0-8a33-a0813f03937f"))
+                .set_json(&json!({
+                    "email": "new@example.com",
+                    "displayName": "New User",
+                }))
+                .to_request(),
+        )
+        .await;
+
+    check!(response.status == 200);
+
+    let response = suite
+        .inject(
+            TestRequest::get()
+                .uri("/users/4ea96dc3-df11-43c0-8a33-a0813f03937f")
+                .append_header(suite.authenticate("4ea96dc3-df11-43c0-8a33-a0813f03937f"))
+                .to_request(),
+        )
+        .await;
+
+    check!(response.headers.get("content-type").unwrap() == "application/json");
+    check!(response.headers.get("cache-control").unwrap() == "private, max-age=3600");
+    check!(response.headers.get("etag").unwrap() != "\"d61dac0c-45f2-49ed-85cc-f24bbe939404\"");
+
+    assert_json_snapshot!(response.to_json().unwrap(), @r###"
+    {
+      "userId": "4ea96dc3-df11-43c0-8a33-a0813f03937f",
+      "username": "testuser",
+      "email": "new@example.com",
+      "displayName": "New User"
+    }
+    "###);
+}
+
+#[actix_rt::test]
+async fn change_password() {
+    let user = SeedUser {
+        user_id: "4ea96dc3-df11-43c0-8a33-a0813f03937f".parse().unwrap(),
+        version: "d61dac0c-45f2-49ed-85cc-f24bbe939404".parse().unwrap(),
+        username: "testuser".to_owned(),
+        email: "testuser@example.com".to_owned(),
+        display_name: "Test User".to_owned(),
+        ..SeedUser::default()
+    }
+    .with_password("Pa55word");
+
+    let suite = TestSuite::new().await;
+    suite.seed(&user).await;
+
+    let response = suite
+        .inject(
+            TestRequest::patch()
+                .uri("/users/4ea96dc3-df11-43c0-8a33-a0813f03937f")
+                .append_header(suite.authenticate("4ea96dc3-df11-43c0-8a33-a0813f03937f"))
+                .set_json(&json!({
+                    "oldPassword": "Pa55word",
+                    "password": r#"SuperSecret\u{2603}"#
+                }))
+                .to_request(),
+        )
+        .await;
+
+    check!(response.status == 200);
+
+    check!(response.headers.get("content-type").unwrap() == "application/json");
+    check!(response.headers.get("cache-control").unwrap() == "private, max-age=3600");
+    check!(response.headers.get("etag").unwrap() != "\"d61dac0c-45f2-49ed-85cc-f24bbe939404\"");
+
+    assert_json_snapshot!(response.to_json().unwrap(), @r###"
+    {
+      "userId": "4ea96dc3-df11-43c0-8a33-a0813f03937f",
+      "username": "testuser",
+      "email": "testuser@example.com",
       "displayName": "Test User"
     }
     "###);
+
+    let response = suite
+        .inject(
+            TestRequest::post()
+                .uri("/authenticate/authenticate")
+                .set_json(&json!({
+                  "username": "testuser",
+                  "password": r#"SuperSecret\u{2603}"#
+                }))
+                .to_request(),
+        )
+        .await;
+
+    check!(response.status == 200);
 }

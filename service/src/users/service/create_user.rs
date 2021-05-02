@@ -29,6 +29,7 @@ impl From<SaveUserError> for CreateUserError {
     fn from(e: SaveUserError) -> Self {
         match e {
             SaveUserError::DuplicateUsername => Self::DuplicateUsername,
+            SaveUserError::UnknownUser => unreachable!("This error is impossible for creating new users"),
             SaveUserError::UnknownError => Self::UnknownError,
         }
     }

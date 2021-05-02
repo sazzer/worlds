@@ -1,11 +1,5 @@
-use chrono::Utc;
-use uuid::Uuid;
-
 use super::UserService;
-use crate::{
-    model::Identity,
-    users::{UserData, UserId, UserResource},
-};
+use crate::users::{repository::SaveUserError, UserData, UserId, UserResource};
 
 #[derive(Debug, PartialEq, thiserror::Error)]
 pub enum UpdateUserError<E>
@@ -43,13 +37,21 @@ impl UserService {
 
         let data = f(user.data).map_err(UpdateUserError::UpdateError)?;
 
-        Ok(UserResource {
-            identity: Identity {
-                version: Uuid::new_v4(),
-                updated: Utc::now(),
-                ..user.identity
-            },
-            data,
-        })
+        let result = self.repository.update_user(&user_id, &data).await?;
+
+        Ok(result)
+    }
+}
+
+impl<E> From<SaveUserError> for UpdateUserError<E>
+where
+    E: std::fmt::Debug,
+{
+    fn from(e: SaveUserError) -> Self {
+        match e {
+            SaveUserError::DuplicateUsername => Self::DuplicateUsername,
+            SaveUserError::UnknownUser => Self::UnknownUser,
+            SaveUserError::UnknownError => Self::UnknownError,
+        }
     }
 }

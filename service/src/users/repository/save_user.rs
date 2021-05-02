@@ -1,4 +1,6 @@
+use chrono::Utc;
 use tokio_postgres::error::{DbError, SqlState};
+use uuid::Uuid;
 
 use super::UserRepository;
 use crate::{
@@ -11,12 +13,15 @@ pub enum SaveUserError {
     #[error("Duplicate username")]
     DuplicateUsername,
 
+    #[error("The user was not found")]
+    UnknownUser,
+
     #[error("An unknown error occurred")]
     UnknownError,
 }
 
 impl UserRepository {
-    /// Create a new user record from the provided User Resource.
+    /// Create a new user record from the provided User data.
     ///
     /// # Parameters
     /// - `user` - The details of the user to create.
@@ -44,6 +49,35 @@ impl UserRepository {
             .map(|row| row.into())?;
 
         Ok(created)
+    }
+
+    /// Update an existing user record from the provided User data.
+    ///
+    /// # Parameters
+    /// - `user` - The details of the user to create.
+    ///
+    /// # Returns
+    /// The updated user resource.
+    #[tracing::instrument(skip(self))]
+    pub async fn update_user(&self, id: &UserId, data: &UserData) -> Result<UserResource, SaveUserError> {
+        let conn = self.database.connect().await;
+
+        let version = Uuid::new_v4();
+        let updated = Utc::now();
+
+        conn.query_opt("UPDATE users SET version = $2, updated = $3, username = $4, display_name = $5, email = $6, password = $7 WHERE user_id = $1 RETURNING *", 
+        &[
+          &id,
+          &version,
+          &updated,
+          &data.username,
+          &data.display_name,
+          &data.email,
+          &data.password,
+          ])
+            .await?
+            .ok_or(SaveUserError::UnknownUser)
+            .map(|row| row.into())
     }
 }
 
