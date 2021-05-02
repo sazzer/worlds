@@ -1,7 +1,8 @@
+mod create_user;
 mod get_user;
-mod save_user;
+mod update_user;
 
-pub use save_user::CreateUserError;
+pub use create_user::CreateUserError;
 
 use super::repository::UserRepository;
 

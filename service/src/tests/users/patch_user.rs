@@ -224,3 +224,45 @@ async fn missing_old_password() {
     }
     "###);
 }
+
+#[actix_rt::test]
+async fn change_email() {
+    let user = SeedUser {
+        user_id: "4ea96dc3-df11-43c0-8a33-a0813f03937f".parse().unwrap(),
+        version: "d61dac0c-45f2-49ed-85cc-f24bbe939404".parse().unwrap(),
+        username: "testuser".to_owned(),
+        email: "testuser@example.com".to_owned(),
+        display_name: "Test User".to_owned(),
+        ..SeedUser::default()
+    };
+
+    let suite = TestSuite::new().await;
+    suite.seed(&user).await;
+
+    let response = suite
+        .inject(
+            TestRequest::patch()
+                .uri("/users/4ea96dc3-df11-43c0-8a33-a0813f03937f")
+                .append_header(suite.authenticate("4ea96dc3-df11-43c0-8a33-a0813f03937f"))
+                .set_json(&json!({
+                    "email": "new@example.com"
+                }))
+                .to_request(),
+        )
+        .await;
+
+    check!(response.status == 200);
+
+    check!(response.headers.get("content-type").unwrap() == "application/json");
+    check!(response.headers.get("cache-control").unwrap() == "private, max-age=3600");
+    check!(response.headers.get("etag").unwrap() != "\"d61dac0c-45f2-49ed-85cc-f24bbe939404\"");
+
+    assert_json_snapshot!(response.to_json().unwrap(), @r###"
+    {
+      "userId": "4ea96dc3-df11-43c0-8a33-a0813f03937f",
+      "username": "testuser",
+      "email": "new@example.com",
+      "displayName": "Test User"
+    }
+    "###);
+}
