@@ -3,6 +3,7 @@ mod get_user;
 mod update_user;
 
 pub use create_user::CreateUserError;
+pub use update_user::UpdateUserError;
 
 use super::repository::UserRepository;
 

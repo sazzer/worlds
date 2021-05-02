@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use actix_http::http::StatusCode;
 use actix_web::web::{Data, Path};
 use serde::Deserialize;
 use serde_json::{json, Value};
@@ -8,10 +9,10 @@ use super::model::FullUserResponse;
 use crate::{
     authorization::{Authentication, Principal},
     http::{
-        problem::{Problem, FORBIDDEN, NOT_FOUND},
+        problem::{Problem, SimpleProblemType, FORBIDDEN, INTERNAL_SERVER_ERROR, NOT_FOUND},
         valid::{Valid, Validatable},
     },
-    users::{Email, Password, UserData, UserId, UserService},
+    users::{Email, Password, UpdateUserError, UserData, UserId, UserService},
 };
 
 pub async fn handle(
@@ -34,8 +35,7 @@ pub async fn handle(
         .update_user_by_id(&user_id, move |user| {
             if let Some(old_password) = request.old_password {
                 if user.password != &old_password {
-                    todo!("Return correct error");
-                    return Err(NOT_FOUND);
+                    return Err(INCORECT_OLD_PASSWORD);
                 }
             }
 
@@ -47,7 +47,11 @@ pub async fn handle(
             })
         })
         .await
-        .map_err(|_e| NOT_FOUND)?;
+        .map_err(|e| match e {
+            UpdateUserError::UpdateError(p) => p,
+            UpdateUserError::UnknownUser => NOT_FOUND,
+            UpdateUserError::DuplicateUsername | UpdateUserError::UnknownError => INTERNAL_SERVER_ERROR,
+        })?;
 
     Ok(user.into())
 }
@@ -90,3 +94,10 @@ impl Validatable for PatchRequest {
         })
     }
 }
+
+/// Problem to indicate that the provided old password was incorrect.
+const INCORECT_OLD_PASSWORD: SimpleProblemType = SimpleProblemType {
+    problem_type:  "tag:worlds,2021:problems/users/incorrect_old_password",
+    problem_title: "Provided old password was incorrect",
+    status_code:   StatusCode::FORBIDDEN,
+};

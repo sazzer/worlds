@@ -377,3 +377,44 @@ async fn change_password() {
 
     check!(response.status == 200);
 }
+
+#[actix_rt::test]
+async fn incorrect_old_password() {
+    let user = SeedUser {
+        user_id: "4ea96dc3-df11-43c0-8a33-a0813f03937f".parse().unwrap(),
+        version: "d61dac0c-45f2-49ed-85cc-f24bbe939404".parse().unwrap(),
+        username: "testuser".to_owned(),
+        email: "testuser@example.com".to_owned(),
+        display_name: "Test User".to_owned(),
+        ..SeedUser::default()
+    }
+    .with_password("Pa55word");
+
+    let suite = TestSuite::new().await;
+    suite.seed(&user).await;
+
+    let response = suite
+        .inject(
+            TestRequest::patch()
+                .uri("/users/4ea96dc3-df11-43c0-8a33-a0813f03937f")
+                .append_header(suite.authenticate("4ea96dc3-df11-43c0-8a33-a0813f03937f"))
+                .set_json(&json!({
+                    "oldPassword": "wrong",
+                    "password": r#"SuperSecret\u{2603}"#
+                }))
+                .to_request(),
+        )
+        .await;
+
+    check!(response.status == 403);
+
+    check!(response.headers.get("content-type").unwrap() == "application/problem+json");
+
+    assert_json_snapshot!(response.to_json().unwrap(), @r###"
+    {
+      "type": "tag:worlds,2021:problems/users/incorrect_old_password",
+      "title": "Provided old password was incorrect",
+      "status": 403
+    }
+    "###);
+}
