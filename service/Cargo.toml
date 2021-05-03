@@ -46,6 +46,7 @@ insta = { version = "1.7.1", features = ["redactions"] }
 [package.metadata.commands]
 clippy = "cargo clippy -Zunstable-options"
 psql = "PGPASSWORD=worlds psql --host localhost --port 45432 --username worlds"
+docker = "docker build -t worlds-service ."
 
 [profile.dev]
 split-debuginfo = "unpacked"
