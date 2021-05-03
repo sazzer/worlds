@@ -95,3 +95,42 @@ jobs:
           image_tag: "${{ env.GIT_TAG }}"
           push_git_tag: true
           context: service
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs:
+      - test-service
+      - build-service-container
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Get the git tag
+        run: |
+          echo GIT_TAG=$(echo ${GITHUB_REF} | sed -e "s/refs\/.*\///g") >> $GITHUB_ENV
+
+      - name: Docker login
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        run: docker login docker.pkg.github.com -u $GITHUB_ACTOR -p $GITHUB_TOKEN
+
+      - name: Pull Service Container
+        run: |
+          docker pull docker.pkg.github.com/${{ format('{0}/worlds-service', github.repository) }}:${{ env.GIT_TAG }}
+          docker tag docker.pkg.github.com/${{ format('{0}/worlds-service', github.repository) }}:${{ env.GIT_TAG }} worlds-service:latest
+
+      - name: Start Services
+        working-directory: e2e
+        run: docker-compose up -d
+
+      - name: Wait for service
+        working-directory: /tmp
+        run: |
+          wget https://github.com/jwilder/dockerize/releases/download/v0.6.1/dockerize-linux-amd64-v0.6.1.tar.gz
+          tar -xzvf dockerize-linux-amd64-v0.6.1.tar.gz
+          /tmp/dockerize -timeout 30s -wait http://localhost:48000 echo Started
+
+      - name: Service Logs
+        if: always()
+        working-directory: e2e
+        run: docker-compose logs worlds-e2e-service

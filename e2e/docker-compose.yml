@@ -1,0 +1,22 @@
+version: "3"
+
+services:
+  worlds-e2e-postgres:
+    image: postgres:12.4-alpine
+    environment:
+      POSTGRES_DB: worlds
+      POSTGRES_USER: worlds
+      POSTGRES_PASSWORD: worlds
+    ports:
+      - "127.0.0.1:45432:5432"
+
+  worlds-e2e-service:
+    image: worlds-service:latest
+    environment:
+      RUST_LOG: debug
+      RUST_BACKTRACE: 1
+      PORT: 8000
+      DATABASE_URL: postgres://worlds:worlds@worlds-e2e-postgres:5432/worlds
+      DOCKERIZE_ARGS: -wait tcp://worlds-e2e-postgres:5432
+    ports:
+      - "127.0.0.1:48000:8000"

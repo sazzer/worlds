@@ -5,7 +5,11 @@ use std::sync::Arc;
 
 use actix_cors::Cors;
 use actix_http::http::header;
-use actix_web::{middleware::Logger, web::ServiceConfig, App, HttpServer};
+use actix_web::{
+    middleware::Logger,
+    web::{get, resource, ServiceConfig},
+    App, HttpServer,
+};
 
 /// The HTTP Server.
 pub struct Server {
@@ -51,6 +55,8 @@ impl Server {
                 )
                 .wrap(span::Span);
 
+            app = app.service(resource("/").route(get().to(home_handler)));
+
             for r in &routes {
                 app = app.configure(move |server_config| {
                     r.configure_routes(server_config);
@@ -67,4 +73,8 @@ impl Server {
         .await
         .unwrap();
     }
+}
+
+async fn home_handler() -> String {
+    "Running".to_owned()
 }
