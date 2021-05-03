@@ -134,3 +134,36 @@ jobs:
         if: always()
         working-directory: e2e
         run: docker-compose logs worlds-e2e-service
+
+  deploy-service-container:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs:
+      - e2e
+    steps:
+      - name: Get the git tag
+        run: |
+          echo GIT_TAG=$(echo ${GITHUB_REF} | sed -e "s/refs\/.*\///g") >> $GITHUB_ENV
+
+      - name: Login to Heroku Container registry
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: heroku container:login
+
+      - name: Docker login
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        run: docker login docker.pkg.github.com -u $GITHUB_ACTOR -p $GITHUB_TOKEN
+
+      - name: Push container
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: |
+          docker pull docker.pkg.github.com/${{ format('{0}/worlds-service', github.repository) }}:${{ env.GIT_TAG }}
+          docker tag docker.pkg.github.com/${{ format('{0}/worlds-service', github.repository) }}:${{ env.GIT_TAG }} registry.heroku.com/worlds-cd/web
+          docker push registry.heroku.com/worlds-cd/web
+
+      - name: Release
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: heroku container:release -a worlds-cd web
