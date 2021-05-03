@@ -2,6 +2,8 @@ use std::str::FromStr;
 
 use deadpool::managed::Object;
 use deadpool_postgres::{ClientWrapper, Manager, ManagerConfig, Pool, RecyclingMethod};
+use openssl::ssl::{SslConnector, SslMethod, SslVerifyMode};
+use postgres_openssl::MakeTlsConnector;
 use postgres_types::ToSql;
 use tokio_postgres::{IsolationLevel, Row};
 
@@ -27,7 +29,12 @@ impl Database {
         let mgr_config = ManagerConfig {
             recycling_method: RecyclingMethod::Fast,
         };
-        let mgr = Manager::from_config(pg_config, tokio_postgres::NoTls, mgr_config);
+
+        let mut builder = SslConnector::builder(SslMethod::tls()).unwrap();
+        builder.set_verify(SslVerifyMode::NONE);
+        let connector = MakeTlsConnector::new(builder.build());
+
+        let mgr = Manager::from_config(pg_config, connector, mgr_config);
         let pool = Pool::new(mgr, 16);
 
         pool.get().await.expect("Unable to open database connection");
