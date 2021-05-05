@@ -1,5 +1,8 @@
 {
   "page": {
     "title": "Worlds"
+  },
+  "header": {
+    "toggleNavigation": "Toggle Navigation"
   }
 }
