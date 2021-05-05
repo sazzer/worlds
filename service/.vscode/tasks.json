@@ -7,6 +7,14 @@
 			"problemMatcher": [
 				"$rustc"
 			],
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": true
+			},
 			"group": "build",
 			"label": "rust: cargo run"
 		},
@@ -16,6 +24,14 @@
 			"problemMatcher": [
 				"$rustc"
 			],
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": true
+			},
 			"group": "test",
 			"label": "rust: cargo test"
 		},
@@ -25,6 +41,14 @@
 			"problemMatcher": [
 				"$rustc"
 			],
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": true
+			},
 			"group": "test",
 			"label": "rust: cargo cmd clippy"
 		}
