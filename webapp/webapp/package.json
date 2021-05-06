@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@auth0/auth0-react": "^1.5.0",
     "debug": "^4.3.1",
     "i18next": "^20.2.2",
     "i18next-browser-languagedetector": "^6.1.0",
@@ -14,6 +15,7 @@
     "web-vitals": "^1.0.1"
   },
   "devDependencies": {
+    "@beam-australia/react-env": "^3.0.8",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^13.1.8",
